@@ -1,0 +1,334 @@
+<?php
+
+require_once __DIR__ . '/../viewModels/productViewModel.php';
+require_once __DIR__ . '/../viewModels/storeReviewViewModel.php';
+require_once __DIR__ . '/../viewModels/reviewViewModel.php';
+require_once __DIR__ . '/../viewModels/userModel.php';
+require_once __DIR__ . '/../viewModels/orderModel.php';
+require_once __DIR__ . '/../viewModels/addressModel.php';
+require_once __DIR__ . '/../viewModels/orderItemViewModel.php';
+
+class Db {
+    private $conn;
+
+    public function __construct() {
+        $host = 'localhost';
+        $dbname = 'sklep';
+        $user = 'postgres';
+        $password = 'postgres';
+        $port = '5432';
+
+        $this->conn = pg_connect("host=$host port=$port dbname=$dbname user=$user password=$password");
+        if (!$this->conn) {
+            die("Błąd połączenia z bazą danych.");
+        }
+    }
+
+    public function getAllProductsFromOrder(int $orderId): array {
+        $query = "SELECT * FROM OrderItemView WHERE order_id = $1";
+        $result = pg_query_params($this->conn, $query, [$orderId]);
+
+        $orderItems = [];
+
+        if($result){
+            while ($row = pg_fetch_assoc($result)) {
+                $orderItems[] = new OrderItemViewModel($row);
+            }
+        }
+
+        return $orderItems;
+    }
+
+    public function insertOrder(int $userId, float $total, array $orderItems): ?int {
+        try {
+            pg_query($this->conn, 'BEGIN');
+
+            $orderQuery = "INSERT INTO orders (user_id, total) VALUES ($1, $2) RETURNING id";
+            $orderResult = pg_query_params($this->conn, $orderQuery, [$userId, $total]);
+
+            if (!$orderResult || pg_num_rows($orderResult) !== 1) {
+                throw new Exception("Nie udało się utworzyć rekordu zamówienia.");
+            }
+
+            $orderRow = pg_fetch_assoc($orderResult);
+            $orderId = $orderRow['id'];
+
+            foreach ($orderItems as $item) {
+                $itemQuery = "INSERT INTO order_items (order_id, product_id, quantity, price) VALUES ($1, $2, $3, $4)";
+                $res1 = pg_query_params($this->conn, $itemQuery, [$orderId, $item['product_id'], $item['qty'], $item['price']]);
+
+                $updateStockQuery = "UPDATE products SET stock = stock - $1 WHERE id = $2";
+                $res2 = pg_query_params($this->conn, $updateStockQuery, [$item['qty'], $item['product_id']]);
+
+                if (!$res1 || !$res2) {
+                    throw new Exception("Błąd podczas zapisywania pozycji zamówienia lub aktualizacji stanu magazynowego.");
+                }
+            }
+
+            pg_query($this->conn, 'COMMIT');
+            return $orderId;
+        } catch (Exception $e) {
+            pg_query($this->conn, 'ROLLBACK');
+            return null;
+        }
+    }
+
+    public function doesOrderBelongsToUser(int $orderId, int $userId): bool {
+        $query = "SELECT 1 FROM orders WHERE id = $1 AND user_id = $2";
+        $result = pg_query_params($this->conn, $query, [$orderId, $userId]);
+        return $result && pg_num_rows($result) > 0;
+    }
+
+    public function getOrderById(int $orderId): ?Order {
+        $query = "SELECT * FROM orders WHERE id = $1";
+        $result = pg_query_params($this->conn, $query, [$orderId]);
+
+        if ($result && pg_num_rows($result) === 1) {
+            $data = pg_fetch_assoc($result);
+            return new Order($data);
+        }
+        return null;
+    }
+
+    public function getOrdersByUserId(int $userId): array {
+        $query = "SELECT * FROM orders WHERE user_id = $1 ORDER BY created_at DESC";
+        $result = pg_query_params($this->conn, $query, [$userId]);
+
+        $orders = [];
+
+        if ($result) {
+            while ($row = pg_fetch_assoc($result)) {
+                $orders[] = new Order($row);
+            }
+        }
+
+        return $orders;
+    }
+
+
+
+    public function loginUser($email, $password): bool {
+
+        $query = "SELECT id, password_hash, permission_id FROM Users WHERE email = $1";
+        $result = pg_query_params($this->conn, $query, [$email]);
+
+        if ($result && pg_num_rows($result) === 1) {
+            $user = pg_fetch_assoc($result);
+            
+            if (password_verify($password, $user['password_hash'])) {
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['permission_id'] = $user['permission_id'];
+                $_SESSION['user_ip'] = $_SERVER['REMOTE_ADDR'];
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function addUser($email, $passwordHash, $name, $surname, $phone, $permissionId = 1, $addressId = null): bool {
+        $query = "INSERT INTO users (email, password_hash, name, surname, phone, permission_id, address_id)VALUES ($1, $2, $3, $4, $5, $6, $7)";
+        $result = pg_query_params($this->conn, $query, [$email, $passwordHash, $name, $surname, $phone, $permissionId, $addressId]);
+
+        return $result !== false;
+    }
+
+
+    public function userExistsByEmail(string $email): bool {
+        $query = "SELECT 1 FROM users WHERE email = $1";
+        $result = pg_query_params($this->conn, $query, [$email]);
+
+        return $result && pg_num_rows($result) > 0;
+    }
+
+    public function userExistsById(int $id): bool {
+        $query = "SELECT 1 FROM Users WHERE id = $1";
+        $result = pg_query_params($this->conn, $query, [$id]);
+        return $result && pg_num_rows($result) > 0;
+    }
+
+    public function getUserById(int $id): ?User {
+        $query = "SELECT * FROM Users WHERE id = $1";
+        $result = pg_query_params($this->conn, $query, [$id]);
+
+        if ($result && pg_num_rows($result) === 1) {
+            $row = pg_fetch_assoc($result);
+            return new User($row);
+        }
+
+        return null;
+    }
+
+    public function getAddressById(int $addressId): ?Address {
+        $query = "SELECT * FROM Addresses WHERE id = $1";
+        $result = pg_query_params($this->conn, $query, [$addressId]);
+
+        if ($result && pg_num_rows($result) === 1) {
+            $row = pg_fetch_assoc($result);
+            return new Address($row);
+        }
+
+        return null;
+    }
+
+    public function upsertUserAddress(int $userId, string $street, string $houseNumber, string $city, string $postalCode, string $country): bool {
+
+        if (!$this->userExistsById($userId)) {
+            return false;
+        }
+
+        $user = $this->getUserById($userId);
+        if ($user->hasAddress()) {
+            $query = "UPDATE addresses SET street_name = $1, house_number = $2, city = $3, postal_code = $4, country = $5 WHERE id = $6";
+
+            $result = pg_query_params($this->conn, $query, [$street, $houseNumber, $city, $postalCode, $country, $user->addressId]);
+            return $result !== false && pg_affected_rows($result) > 0;
+
+        } else {
+            $query = "INSERT INTO addresses (street_name, house_number, city, postal_code, country) VALUES ($1, $2, $3, $4, $5) RETURNING id";
+
+            $result = pg_query_params($this->conn, $query, [$street, $houseNumber, $city, $postalCode, $country]);
+
+            if ($result && pg_num_rows($result) === 1) {
+                $row = pg_fetch_assoc($result);
+                $newAddressId = $row['id'];
+
+                $updateUserQuery = "UPDATE users SET address_id = $1 WHERE id = $2";
+                pg_query_params($this->conn, $updateUserQuery, [$newAddressId, $userId]);
+
+                return true;
+            }
+
+            return false;
+        }
+
+    }
+
+
+    public function getAllProductsFromCategory($categoryId,$orderBy): array{
+        $query = "SELECT * FROM ProductView WHERE category_id = $1 {$orderBy}";
+        $result = pg_query_params($this->conn, $query, [$categoryId]);
+
+        $products = [];
+
+        if ($result) {
+            while ($row = pg_fetch_assoc($result)) {
+                $products[] = new ProductViewModel($row);
+            }
+        }
+
+        return $products;
+    }
+
+    public function getProductById($id): ?ProductViewModel {
+        $query = "SELECT * FROM ProductView WHERE id = $1";
+        $result = pg_query_params($this->conn, $query, [$id]);
+
+        if ($result && pg_num_rows($result) > 0) {
+            $row = pg_fetch_assoc($result);
+            return new ProductViewModel($row);
+        }
+
+        return null; 
+    }
+
+    public function doesProductExists(int $productId): bool {
+        $query = "SELECT 1 FROM products WHERE id = $1 LIMIT 1";
+        $result = pg_query_params($this->conn, $query, [$productId]);
+
+        return $result && pg_num_rows($result) > 0;
+    }
+
+
+    public function deleteProductById(int $id): bool {
+        $query = "DELETE FROM products WHERE id = $1";
+        $result = pg_query_params($this->conn, $query, [$id]);
+
+        return $result !== false && pg_affected_rows($result) > 0;
+    }
+
+
+    public function getProductsBySearch($searchTerm,$orderBy): array {
+        $query = "SELECT * FROM ProductView WHERE LOWER(name) LIKE $1 OR LOWER(brand) LIKE $1 {$orderBy} LIMIT 30";
+
+        $param = '%' . strtolower($searchTerm) . '%';
+        $result = pg_query_params($this->conn, $query, [$param]);
+
+        $products = [];
+        if ($result) {
+            while ($row = pg_fetch_assoc($result)) {
+                $products[] = new ProductViewModel($row);
+            }
+        }
+
+        return $products;
+    }
+
+    public function getProductsAttributes($productId): array {
+        $query = "SELECT attributes.name, product_attributes.value, attributes.unit FROM product_attributes JOIN attributes ON attributes.id = product_attributes.attribute_id WHERE product_attributes.product_id = $1";
+        $result = pg_query_params($this->conn, $query, [$productId]);
+
+        $attributes = [];
+
+        if ($result) {
+            while ($row = pg_fetch_assoc($result)) {
+                $attributes[] = [
+                    'name' => $row['name'],
+                    'value' => $row['value'],
+                    'unit' => $row['unit']
+                ];
+            }
+        }
+
+        return $attributes;
+    }
+
+    public function getReviewsByProductId($productId): array {
+        $query = "SELECT * FROM reviews_view WHERE product_id = $1 ORDER BY created_at DESC";
+        $result = pg_query_params($this->conn, $query, [$productId]);
+
+        $reviews = [];
+
+        if ($result) {
+            while ($row = pg_fetch_assoc($result)) {
+                $reviews[] = new ReviewView($row);
+            }
+        }
+
+        return $reviews;
+    }   
+
+    public function getTop3StoreReviews(): array {
+        $query = "SELECT * FROM store_reviews_view ORDER BY rating DESC LIMIT 3";
+        $result = pg_query($this->conn, $query);
+
+        $reviews = [];
+
+        if ($result) {
+            while ($row = pg_fetch_assoc($result)) {
+                $reviews[] = new StoreReviewViewModel($row);
+            }
+        }
+
+        return $reviews;
+    }
+
+    public function addReview($userId, $productId, $rating, $comment): void {
+        $query = "INSERT INTO reviews (user_id, product_id, rating, comment) VALUES ($1, $2, $3, $4)";
+        pg_query_params($this->conn, $query, [$userId, $productId, $rating, $comment]);
+    }  
+
+    public function hasUserReviewedProduct($userId, $productId): bool {
+        $query = "SELECT 1 FROM reviews WHERE user_id = $1 AND product_id = $2 LIMIT 1";
+        $result = pg_query_params($this->conn, $query, [$userId, $productId]);
+
+        return $result && pg_num_rows($result) > 0;
+    }
+
+
+
+    public function __destruct() {
+        pg_close($this->conn);
+    }
+}
