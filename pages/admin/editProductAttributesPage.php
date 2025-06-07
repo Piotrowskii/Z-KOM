@@ -169,22 +169,21 @@ $missingAttributes = $db->getProductMissingAttributes($productId);
             <div class="card-body">
                 <h5 class="card-title">Dodaj nowy atrybut</h5>
 
-                <form method="post" class="d-flex gap-2 align-items-center flex-wrap">
+                <form method="post" class="d-flex gap-2 align-items-center">
                     <input type="hidden" name="action" value="add" />
                     <input type="hidden" name="product_id" value="<?= htmlspecialchars($productId) ?>" />
 
-                    <div class="d-flex gap-2">
+                    <select name="attribute_id" class="form-select flex-fill" required>
+                        <?php foreach ($missingAttributes as $attr): ?>
+                            <option value="<?= htmlspecialchars($attr['id']) ?>">
+                                <?= htmlspecialchars($attr['name']) ?><?= $attr['unit'] ? ' (' . htmlspecialchars($attr['unit']) . ')' : '' ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
 
-                        <select name="attribute_id" class="form-select w-50" required>
-                            <?php foreach ($missingAttributes as $attr): ?>
-                                <option value="<?= htmlspecialchars($attr['id']) ?>"><?= htmlspecialchars($attr['name']) ?><?= $attr['unit'] ? ' ('.htmlspecialchars($attr['unit']).')' : '' ?></option>
-                            <?php endforeach; ?>
-                        </select>
+                    <input type="text" name="value" class="form-control flex-fill" placeholder="Wartość atrybutu" required />
 
-                        <input type="text" name="value" class="form-control w-50" placeholder="Wartość atrybutu" required />
-                    </div>
-
-                    <button type="submit" class="btn btn-success">Dodaj</button>
+                    <button type="submit" class="btn btn-success flex-shrink-0">Dodaj</button>
                 </form>
             </div>
         </div>
@@ -233,6 +232,14 @@ $missingAttributes = $db->getProductMissingAttributes($productId);
  
 
 <script src="../../bootstrap/bootstrap.bundle.min.js"></script>
+<!-- Usuwanie tosta po czasie -->
+<script>
+  const toastEl = document.getElementById('statusToast');
+  if (toastEl) {
+    const bsToast = new bootstrap.Toast(toastEl, { delay: 5000 });
+    bsToast.show();
+  }
+</script>
 </body>
 </html>
 

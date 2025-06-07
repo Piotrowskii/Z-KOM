@@ -143,7 +143,7 @@ FROM reviews JOIN users ON reviews.user_id = users.id;
 
 CREATE OR REPLACE VIEW ProductView AS
 SELECT products.*, (SELECT COALESCE(ROUND(AVG(reviews.rating), 2), 0) FROM reviews WHERE reviews.product_id = products.id) AS rating, discounts.discount_percent,ROUND(products.price * (1 - COALESCE(discounts.discount_percent, 0) / 100), 2) AS final_price
-FROM products LEFT JOIN discounts ON discounts.id = products.discount_id;
+FROM products LEFT JOIN discounts ON discounts.id = products.discount_id AND discounts.active = TRUE AND CURRENT_DATE BETWEEN discounts.start_date AND discounts.end_date;
 
 CREATE OR REPLACE VIEW OrderItemView AS
 SELECT products.name, order_items.quantity, order_items.price, products.image_url, order_items.order_id, order_items.product_id AS id
@@ -207,6 +207,11 @@ INSERT INTO discounts (discount_percent, name) VALUES
 (12.50, 'Promocja na monitory');
 
 
+-- Wygaśnięta zniżka do testów dodana na Gram 17
+INSERT INTO discounts (discount_percent, name, start_date, end_date, active) VALUES
+(25.00, 'Wygasła zniżka', CURRENT_DATE - INTERVAL '10 days', CURRENT_DATE - INTERVAL '5 days', TRUE);
+
+
 
 -- Atrybuty dla Laptopy 
 INSERT INTO attributes (name, unit) VALUES 
@@ -251,7 +256,7 @@ INSERT INTO products (name, brand, description, price, stock, image_url, categor
 ('IdeaPad Gaming 3', 'Lenovo', 'Laptop stworzony z myślą o graczach szukających wydajności w przystępnej cenie. Posiada kartę graficzną NVIDIA GTX 1650 oraz procesor AMD Ryzen 5. System chłodzenia dba o optymalną temperaturę. Ekran 120 Hz zapewnia płynność w grach.', 4100.00, 8, '../assets/images/laptopPage/placeholder1.jpg', 1,NULL),
 ('MateBook D15', 'Huawei', 'Stylowy laptop z ekranem FullView 15.6". Lekki i cienki, a jednocześnie solidny. Wyposażony w procesor Intel Core i5 i szybki dysk SSD. Dobrze sprawdza się w pracy zdalnej i nauce.', 3200.00, 16, '../assets/images/laptopPage/placeholder2.jpg', 1,1),
 ('TUF F15', 'ASUS', 'Wydajny laptop gamingowy z grafiką RTX 4060 i procesorem Intel Core i7. Wyposażony w ekran 144 Hz oraz podświetlaną klawiaturę. Solidna konstrukcja spełnia wojskowe normy wytrzymałości. Idealny dla graczy i twórców.', 5900.00, 6, '../assets/images/laptopPage/placeholder3.jpg', 1,NULL),
-('Gram 17', 'LG', 'Ultralekki laptop z dużym ekranem 17". Waży zaledwie 1,35 kg, co czyni go wyjątkowym w swojej klasie. Posiada pojemną baterię i procesor Intel Core i7. Świetny wybór do pracy w podróży.', 6700.00, 4, '../assets/images/laptopPage/placeholder1.jpg', 1,NULL);
+('Gram 17', 'LG', 'Ultralekki laptop z dużym ekranem 17". Waży zaledwie 1,35 kg, co czyni go wyjątkowym w swojej klasie. Posiada pojemną baterię i procesor Intel Core i7. Świetny wybór do pracy w podróży.', 6700.00, 4, '../assets/images/laptopPage/placeholder1.jpg', 1,5);
 
 
 --Dodanie 10 smartphonów

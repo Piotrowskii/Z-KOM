@@ -42,7 +42,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $price = (float) ($_POST['price'] ?? -1);
     $stock = (int) ($_POST['stock'] ?? -1);
     $imageUrl = trim($_POST['image_url'] ?? '');
-    $categoryId = (int) ($_POST['category_id'] ?? 0);
+    $categoryId = $_POST['category_id'] === '' ? null : (int)$_POST['category_id'];
+    $discountId = $_POST['discount_id'] === '' ? null : (int)$_POST['discount_id'];
 
     if (!$id || $id < 1) $errors[] = "Nieprawidłowe ID produktu.";
     if (!$name) $errors[] = "Nazwa jest wymagana.";
@@ -50,11 +51,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($price < 0 || $price > 99999999.99) $errors[] = "Nieprawidłowa cena.";
     if ($stock < 0) $errors[] = "Nieprawidłowy stan magazynowy.";
     if (!$imageUrl) $errors[] = "Adres URL zdjęcia jest wymagany.";
-    if ($categoryId < 1 || $categoryId > 4) $errors[] = "Nieprawidłowa kategoria.";
-
 
     if (empty($errors)) {
-        $success = $db->editProduct($id, $name, $brand, $description, $price, $stock, $imageUrl, $categoryId);
+        $success = $db->editProduct($id, $name, $brand, $description, $price, $stock, $imageUrl, $categoryId, $discountId);
         if($success){
             header('Location: ../productPage.php?product='.$id);
             exit;
@@ -150,6 +149,7 @@ $attributes = $db->getProductsAttributes($productId);
         </div>
         <div class="card-body">
             <form method="post" enctype="multipart/form-data">
+                <!-- Id produktu -->
                 <input type="hidden" name="id" value="<?= htmlspecialchars($product->id) ?>" />
 
                 <div class="mb-3">
@@ -167,13 +167,28 @@ $attributes = $db->getProductsAttributes($productId);
                     <textarea id="description" name="description" class="form-control" rows="4"><?= htmlspecialchars($product->description) ?></textarea>
                 </div>
 
+                <!-- Wybór kategorii -->
                 <div class="mb-3">
                     <label for="category_id" class="form-label">Kategoria</label>
-                    <select id="category_id" name="category_id" class="form-select" required>
-                        <option value="1" <?= $product->categoryId == 1 ? 'selected' : '' ?>>Laptopy</option>
-                        <option value="2" <?= $product->categoryId == 2 ? 'selected' : '' ?>>Smartfony</option>
-                        <option value="3" <?= $product->categoryId == 3 ? 'selected' : '' ?>>Komputery</option>
-                        <option value="4" <?= $product->categoryId == 4 ? 'selected' : '' ?>>Monitory</option>
+                    <select id="category_id" name="category_id" class="form-select">
+
+                        <?php foreach ($db->getAllCategories() as $category): ?>
+                            <option value="<?= htmlspecialchars($category->id) ?>" <?= $product->categoryId == $category->id ? 'selected' : '' ?>><?= htmlspecialchars($category->name) ?></option>
+                        <?php endforeach; ?>
+
+                    </select>
+                </div>
+
+                <!-- Wybór przeceny -->
+                <div class="mb-3">
+                    <label for="discount_id" class="form-label">Przecena</label>
+                    <select id="discount_id" name="discount_id" class="form-select">
+                        <option value="" <?= $product->discountId === null ? 'selected' : '' ?>>Brak zniżki</option>
+
+                        <?php foreach ($db->getAllDiscounts() as $discount): ?>
+                            <option class="<?= !$discount->isActive() ? 'text-danger' : '' ?>" value="<?= htmlspecialchars($discount->id) ?>" <?= $product->discountId == $discount->id ? 'selected' : '' ?>><?= htmlspecialchars($discount->name) ?> <?= ' ('.htmlspecialchars($discount->discountPercent).'%)' ?> <?= !$discount->isActive() ? '!!! NIEWAŻNA !!!' : '' ?></option>
+                        <?php endforeach; ?>
+
                     </select>
                 </div>
 
@@ -222,12 +237,23 @@ $attributes = $db->getProductsAttributes($productId);
  
 
 <script src="../../bootstrap/bootstrap.bundle.min.js"></script>
+
+<!-- Usuwanie tosta po czasie -->
+<script>
+  const toastEl = document.getElementById('statusToast');
+  if (toastEl) {
+    const bsToast = new bootstrap.Toast(toastEl, { delay: 5000 });
+    bsToast.show();
+  }
+</script>
+
+<!-- Pokazywanie zjęcia -->
 <script>
     const imageUrlInput = document.getElementById('image_url');
     const imagePreviewDiv = document.getElementById('image_preview');
     const togglePreviewBtn = document.getElementById('togglePreviewBtn');
 
-    let previewEnabled = false;
+    let previewEnabled = true;
 
     function updatePreview() {
         if (!previewEnabled) {

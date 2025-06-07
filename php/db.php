@@ -8,6 +8,7 @@ require_once __DIR__ . '/../viewModels/orderModel.php';
 require_once __DIR__ . '/../viewModels/addressModel.php';
 require_once __DIR__ . '/../viewModels/orderItemViewModel.php';
 require_once __DIR__ . '/../viewModels/discountModel.php';
+require_once __DIR__ . '/../viewModels/categoryModel.php';
 
 class Db {
     private $conn;
@@ -105,6 +106,38 @@ class Db {
 
         return $orders;
     }
+
+    public function getAllDiscounts(): array {
+        $query = "SELECT * FROM discounts ORDER BY start_date DESC";
+        $result = pg_query($this->conn, $query);
+
+        $discounts = [];
+
+        if ($result) {
+            while ($row = pg_fetch_assoc($result)) {
+                $discounts[] = new Discount($row);
+            }
+        }
+
+        return $discounts;
+    }
+
+    public function getAllCategories(): array {
+        $query = "SELECT * FROM categories ORDER BY name ASC";
+        $result = pg_query($this->conn, $query);
+
+        $categories = [];
+
+        if ($result) {
+            while ($row = pg_fetch_assoc($result)) {
+                $categories[] = new Category($row);
+            }
+        }
+
+        return $categories;
+    }
+
+
 
 
 
@@ -249,9 +282,9 @@ class Db {
         return $result !== false && pg_affected_rows($result) > 0;
     }
 
-    public function editProduct(int $id, string $name, string $brand, ?string $description, float $price, int $stock, string $imageUrl, int $categoryId): bool {
-        $query = "UPDATE products SET name = $1, brand = $2, description = $3, price = $4, stock = $5, image_url = $6, category_id = $7 WHERE id = $8";
-        $result = pg_query_params($this->conn, $query, [$name, $brand, $description, $price, $stock, $imageUrl, $categoryId, $id]);
+    public function editProduct(int $id, string $name, string $brand, ?string $description, float $price, int $stock, string $imageUrl, ?int $categoryId, ?int $discountId): bool {
+        $query = "UPDATE products SET name = $1, brand = $2, description = $3, price = $4, stock = $5, image_url = $6, category_id = $7, discount_id = $8 WHERE id = $9";
+        $result = pg_query_params($this->conn, $query, [$name, $brand, $description, $price, $stock, $imageUrl, $categoryId, $discountId, $id]);
 
         return $result !== false;
     }   

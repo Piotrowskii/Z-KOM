@@ -14,6 +14,15 @@ class Discount {
         $this->name = $data['name'];
         $this->startDate = $data['start_date'];
         $this->endDate = $data['end_date'];
-        $this->active = filter_var($data['active'], FILTER_VALIDATE_BOOLEAN);
+        $this->active = (bool)$data['active'];
+    }
+
+    public function isActive(): bool
+    {
+        $now = new DateTime();
+        $startDate = new DateTime($this->startDate);
+        $endDate = new DateTime($this->endDate);
+
+        return $this->active && $now >= $startDate && $now <= $endDate;
     }
 }
