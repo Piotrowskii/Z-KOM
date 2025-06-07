@@ -7,7 +7,7 @@ require_once __DIR__ . '/../viewModels/userModel.php';
 require_once __DIR__ . '/../viewModels/orderModel.php';
 require_once __DIR__ . '/../viewModels/addressModel.php';
 require_once __DIR__ . '/../viewModels/orderItemViewModel.php';
-require_once __DIR__ . '/../viewModels/discountModel.php.php';
+require_once __DIR__ . '/../viewModels/discountModel.php';
 
 class Db {
     private $conn;
