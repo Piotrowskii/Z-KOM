@@ -23,7 +23,7 @@ class SessionStorage
             $type = htmlspecialchars($_SESSION['alertType']);
 
             echo <<<HTML
-            <div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1080;">
+            <div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1100;">
                 <div id="statusToast" class="toast align-items-center text-bg-{$type} border-0 show" role="alert" aria-live="assertive" aria-atomic="true"
                     style="font-size: 1.1rem; min-width: 400px; max-width: 800px; padding: 1rem 1.5rem;">
                 <div class="d-flex">

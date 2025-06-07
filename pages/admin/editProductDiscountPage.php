@@ -1,6 +1,7 @@
 <?php
 require_once '../../php/db.php';
 require_once '../../php/loginManager.php';
+require_once '../../php/sessionStorage.php';
 
 session_start();
 $db = new Db();
@@ -11,6 +12,13 @@ if(!$loginManager->isLoggedIn() || !$loginManager->isAdmin()){
     header('Location: ../../index.php');
     exit;
 }
+
+if(!isset($_GET['product'])){
+  header('Location: ../index.php');
+  exit;
+}
+
+$productId = $_GET['product'];
 ?>
 
 <!DOCTYPE html>
@@ -25,8 +33,15 @@ if(!$loginManager->isLoggedIn() || !$loginManager->isAdmin()){
 </head>
 <body>
 
+<?php
+
+?>
 
 
+<!-- Wyświetlanie alertu -->
+<?php
+SessionStorage::renderAlert();
+?>
 
 <!-- "Nawigacja" -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top shadow">
@@ -78,8 +93,8 @@ if(!$loginManager->isLoggedIn() || !$loginManager->isAdmin()){
   </div>
 </nav>
 
-
-
+<!-- Return button -->
+<a class="btn btn-secondary mx-5 mt-2" href="../productPage.php?product=<?= htmlspecialchars($productId)?>">Wróc na strone produktu</a>
 
 
 

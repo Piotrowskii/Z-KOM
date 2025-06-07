@@ -7,6 +7,7 @@ require_once __DIR__ . '/../viewModels/userModel.php';
 require_once __DIR__ . '/../viewModels/orderModel.php';
 require_once __DIR__ . '/../viewModels/addressModel.php';
 require_once __DIR__ . '/../viewModels/orderItemViewModel.php';
+require_once __DIR__ . '/../viewModels/discountModel.php.php';
 
 class Db {
     private $conn;
@@ -248,6 +249,13 @@ class Db {
         return $result !== false && pg_affected_rows($result) > 0;
     }
 
+    public function editProduct(int $id, string $name, string $brand, ?string $description, float $price, int $stock, string $imageUrl, int $categoryId): bool {
+        $query = "UPDATE products SET name = $1, brand = $2, description = $3, price = $4, stock = $5, image_url = $6, category_id = $7 WHERE id = $8";
+        $result = pg_query_params($this->conn, $query, [$name, $brand, $description, $price, $stock, $imageUrl, $categoryId, $id]);
+
+        return $result !== false;
+    }   
+
 
     public function getProductsBySearch($searchTerm,$orderBy): array {
         $query = "SELECT * FROM ProductView WHERE LOWER(name) LIKE $1 OR LOWER(brand) LIKE $1 {$orderBy} LIMIT 30";
@@ -266,7 +274,7 @@ class Db {
     }
 
     public function getProductsAttributes($productId): array {
-        $query = "SELECT attributes.name, product_attributes.value, attributes.unit FROM product_attributes JOIN attributes ON attributes.id = product_attributes.attribute_id WHERE product_attributes.product_id = $1";
+        $query = "SELECT product_attributes.id, attributes.name, product_attributes.value, attributes.unit FROM product_attributes JOIN attributes ON attributes.id = product_attributes.attribute_id WHERE product_attributes.product_id = $1";
         $result = pg_query_params($this->conn, $query, [$productId]);
 
         $attributes = [];
@@ -274,6 +282,7 @@ class Db {
         if ($result) {
             while ($row = pg_fetch_assoc($result)) {
                 $attributes[] = [
+                    'id' => $row['id'],
                     'name' => $row['name'],
                     'value' => $row['value'],
                     'unit' => $row['unit']
@@ -283,6 +292,50 @@ class Db {
 
         return $attributes;
     }
+
+    public function updateProductAttribute(int $attributeId, string $value): bool {
+        $query = "UPDATE product_attributes SET value = $1 WHERE id = $2";
+        $result = pg_query_params($this->conn, $query, [$value, $attributeId]);
+
+        return $result !== false;
+    }
+
+    public function addProductAttribute(int $productId, int $attributeId, string $value): bool
+    {
+        $query = "INSERT INTO product_attributes (product_id, attribute_id, value) VALUES ($1, $2, $3)";
+        $result = pg_query_params($this->conn, $query, [$productId, $attributeId, $value]);
+        return $result !== false;
+    }
+
+
+    public function deleteProductAttribute(int $attributeId): bool {
+        $query = "DELETE FROM product_attributes WHERE id = $1";
+        $result = pg_query_params($this->conn, $query, [$attributeId]);
+
+        return $result !== false;
+    }
+
+    public function getProductMissingAttributes(int $productId): array {
+        $query = "SELECT attributes.id, attributes.name, attributes.unit FROM attributes LEFT JOIN product_attributes ON product_attributes.attribute_id = attributes.id AND product_attributes.product_id = $1 WHERE product_attributes.attribute_id IS NULL";
+        $result = pg_query_params($this->conn, $query, [$productId]);
+        
+        $missingAttributes = [];
+        
+        if ($result) {
+            while ($row = pg_fetch_assoc($result)) {
+                $missingAttributes[] = [
+                    'id' => $row['id'],
+                    'name' => $row['name'],
+                    'unit' => $row['unit']
+                ];
+            }
+        }
+        
+        return $missingAttributes;
+    }
+
+
+
 
     public function getReviewsByProductId($productId): array {
         $query = "SELECT * FROM reviews_view WHERE product_id = $1 ORDER BY created_at DESC";

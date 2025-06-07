@@ -141,9 +141,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
         <strong>Panel administratora:</strong> Możesz edytować ten produkt.
       </div>
       <div>
+        <a href="./admin/editProductDiscountPage.php?product=<?= htmlspecialchars($productId) ?>" class="btn btn-sm btn-primary me-2">Edytuj przeceny</a>
+        <a href="./admin/editProductAttributesPage.php?product=<?= htmlspecialchars($productId) ?>" class="btn btn-sm btn-secondary me-2">Edytuj atrybuty</a>
         <a href="./admin/editProductPage.php?product=<?= htmlspecialchars($productId) ?>" class="btn btn-sm btn-dark me-2">Edytuj produkt</a>
         <a href="./admin/deleteProductPage.php?product=<?= htmlspecialchars($productId) ?>" class="btn btn-sm btn-danger me-2" onclick="return confirm('Czy na pewno chcesz usunąć ten produkt?');">Usuń produkt</a>
-        <a href="./admin/addProductPage.php" class="btn btn-sm btn-success">Dodaj nowy produkt</a>
       </div>
     </div>
   </div>

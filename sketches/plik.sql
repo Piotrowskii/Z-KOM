@@ -80,10 +80,8 @@ CREATE TABLE products (
 -- category_id = 1, name = "procesor"
 CREATE TABLE attributes (
     id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    category_id INT NOT NULL,
     name VARCHAR(255) NOT NULL,
-    unit VARCHAR(50),
-    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
+    unit VARCHAR(50)
 );
 
 CREATE TABLE product_attributes (
@@ -211,36 +209,36 @@ INSERT INTO discounts (discount_percent, name) VALUES
 
 
 -- Atrybuty dla Laptopy 
-INSERT INTO attributes (category_id, name, unit) VALUES 
-(1, 'Procesor', NULL),
-(1, 'Rozmiar ekranu', '″'),
-(1, 'Pojemność baterii', 'Wh'),
-(1, 'Pamięć RAM', 'GB'),
-(1, 'Dysk SSD', 'GB');
+INSERT INTO attributes (name, unit) VALUES 
+('Procesor', NULL),
+('Rozmiar ekranu', '″'),
+('Pojemność baterii', 'Wh'),
+('Pamięć RAM', 'GB'),
+('Dysk SSD', 'GB');
 
 -- Atrybuty dla Smartfony 
-INSERT INTO attributes (category_id, name, unit) VALUES 
-(2, 'Przekątna ekranu', '″'),
-(2, 'Pojemność baterii', 'mAh'),
-(2, 'Aparat', 'Mpx'),
-(2, 'Pamięć wbudowana', 'GB'),
-(2, 'RAM', 'GB');
+INSERT INTO attributes (name, unit) VALUES 
+('Przekątna ekranu', '″'),
+('Pojemność baterii', 'mAh'),
+('Aparat', 'Mpx'),
+('Pamięć wbudowana', 'GB'),
+('RAM', 'GB');
 
 -- Atrybuty dla Komputery 
-INSERT INTO attributes (category_id, name, unit) VALUES 
-(3, 'Procesor', NULL),
-(3, 'Pamięć RAM', 'GB'),
-(3, 'Dysk twardy', 'GB'),
-(3, 'Karta graficzna', NULL),
-(3, 'Zasilacz', 'W');
+INSERT INTO attributes (name, unit) VALUES 
+('Procesor', NULL),
+('Pamięć RAM', 'GB'),
+('Dysk twardy', 'GB'),
+('Karta graficzna', NULL),
+('Zasilacz', 'W');
 
 -- Atrybuty dla Monitory 
-INSERT INTO attributes (category_id, name, unit) VALUES 
-(4, 'Przekątna ekranu', '″'),
-(4, 'Rozdzielczość', NULL),
-(4, 'Częstotliwość odświeżania', 'Hz'),
-(4, 'Typ matrycy', NULL),
-(4, 'Czas reakcji', 'ms');
+INSERT INTO attributes (name, unit) VALUES 
+('Przekątna ekranu', '″'),
+('Rozdzielczość', NULL),
+('Częstotliwość odświeżania', 'Hz'),
+('Typ matrycy', NULL),
+('Czas reakcji', 'ms');
 
 -- Dodanie 10 laptopów
 INSERT INTO products (name, brand, description, price, stock, image_url, category_id, discount_id) VALUES
