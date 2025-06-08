@@ -87,7 +87,7 @@ SessionStorage::renderAlert();
 <div class="container px-5 py-4"> <!-- Mocny padding-x (px-5) -->
   <div class="row g-4"> <!-- g-4 = odstępy między kolumnami i rzędami -->
     
-    <!-- Karta 1 -->
+    <!-- Dodawanie produktu -->
     <div class="col-md-6">
       <div class="card shadow border border-success">
         <div class="card-body">
@@ -98,13 +98,24 @@ SessionStorage::renderAlert();
       </div>
     </div>
 
-    <!-- Karta 1 -->
+    <!-- Zarządzanie kategoriami -->
     <div class="col-md-6">
       <div class="card shadow border border-warning">
         <div class="card-body">
           <h5 class="card-title">Zarządzaj kategoriami</h5>
           <p class="card-text">Kliknij poniższy przycisk, aby zarządzać kategoriami w bazie.</p>
           <a href="editCategoriesPage.php" class="btn btn-warning">Zarządzaj kategoriami</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Zarządzanie atrybutami -->
+    <div class="col-md-6">
+      <div class="card shadow border border-warning">
+        <div class="card-body">
+          <h5 class="card-title">Zarządzaj atrybutami</h5>
+          <p class="card-text">Kliknij poniższy przycisk, aby zarządzać atrybutami w bazie.</p>
+          <a href="editAttributesPage.php" class="btn btn-warning">Zarządzaj atrybutami</a>
         </div>
       </div>
     </div>

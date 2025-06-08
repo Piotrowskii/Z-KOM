@@ -9,6 +9,7 @@ require_once __DIR__ . '/../viewModels/addressModel.php';
 require_once __DIR__ . '/../viewModels/orderItemViewModel.php';
 require_once __DIR__ . '/../viewModels/discountModel.php';
 require_once __DIR__ . '/../viewModels/categoryModel.php';
+require_once __DIR__ . '/../viewModels/attributeModel.php';
 
 class Db {
     private $conn;
@@ -137,6 +138,62 @@ class Db {
         return $categories;
     }
 
+    public function addCategory(string $name): bool {
+        $query = "INSERT INTO categories (name) VALUES ($1)";
+        $result = pg_query_params($this->conn, $query, [$name]);
+
+        return $result !== false;
+    }
+
+    public function updateCategory(int $categoryId, string $name): bool {
+        $query = "UPDATE categories SET name = $1 WHERE id = $2";
+        $result = pg_query_params($this->conn, $query, [$name, $categoryId]);
+
+        return $result !== false;
+    }
+
+    public function deleteCategory(int $categoryId): bool {
+        $query = "DELETE FROM categories WHERE id = $1";
+        $result = pg_query_params($this->conn, $query, [$categoryId]);
+
+        return $result !== false;
+    }
+
+    public function getAllAttributes(): array {
+        $query = "SELECT * FROM attributes ORDER BY name ASC";
+        $result = pg_query($this->conn, $query);
+
+        $attributes = [];
+
+        if ($result) {
+            while ($row = pg_fetch_assoc($result)) {
+                $attributes[] = new DbAttribute($row);
+            }
+        }
+
+        return $attributes;
+    }
+
+    public function addAttribute(string $name, ?string $unit): bool {
+        $query = "INSERT INTO attributes (name, unit) VALUES ($1, $2)";
+        $result = pg_query_params($this->conn, $query, [$name, $unit]);
+
+        return $result !== false;
+    }
+
+    public function updateAttribute(int $attributeId, string $name, ?string $unit): bool {
+        $query = "UPDATE attributes SET name = $1, unit = $2 WHERE id = $3";
+        $result = pg_query_params($this->conn, $query, [$name, $unit, $attributeId]);
+
+        return $result !== false;
+    }
+
+    public function deleteAttribute(int $attributeId): bool {
+        $query = "DELETE FROM attributes WHERE id = $1";
+        $result = pg_query_params($this->conn, $query, [$attributeId]);
+
+        return $result !== false;
+    }
 
 
 
@@ -379,26 +436,6 @@ class Db {
         return $missingAttributes;
     }
 
-    public function addCategory(string $name): bool {
-        $query = "INSERT INTO categories (name) VALUES ($1)";
-        $result = pg_query_params($this->conn, $query, [$name]);
-
-        return $result !== false;
-    }
-
-    public function updateCategory(int $categoryId, string $name): bool {
-        $query = "UPDATE categories SET name = $1 WHERE id = $2";
-        $result = pg_query_params($this->conn, $query, [$name, $categoryId]);
-
-        return $result !== false;
-    }
-
-    public function deleteCategory(int $categoryId): bool {
-        $query = "DELETE FROM categories WHERE id = $1";
-        $result = pg_query_params($this->conn, $query, [$categoryId]);
-
-        return $result !== false;
-    }
 
 
     public function getReviewsByProductId($productId): array {
