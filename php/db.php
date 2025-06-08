@@ -289,6 +289,18 @@ class Db {
         return $result !== false;
     }   
 
+    public function addProduct(string $name, string $brand, ?string $description, float $price, int $stock, string $imageUrl, ?int $categoryId, ?int $discountId): ?int {
+        $query = "INSERT INTO products (name, brand, description, price, stock, image_url, category_id, discount_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id";
+        $result = pg_query_params($this->conn, $query, [$name, $brand, $description, $price, $stock, $imageUrl, $categoryId, $discountId]);
+
+        if ($result && pg_num_rows($result) === 1) {
+            $row = pg_fetch_assoc($result);
+            return (int) $row['id'];
+        }
+
+        return null;
+    }
+
 
     public function getProductsBySearch($searchTerm,$orderBy): array {
         $query = "SELECT * FROM ProductView WHERE LOWER(name) LIKE $1 OR LOWER(brand) LIKE $1 {$orderBy} LIMIT 30";
@@ -367,7 +379,26 @@ class Db {
         return $missingAttributes;
     }
 
+    public function addCategory(string $name): bool {
+        $query = "INSERT INTO categories (name) VALUES ($1)";
+        $result = pg_query_params($this->conn, $query, [$name]);
 
+        return $result !== false;
+    }
+
+    public function updateCategory(int $categoryId, string $name): bool {
+        $query = "UPDATE categories SET name = $1 WHERE id = $2";
+        $result = pg_query_params($this->conn, $query, [$name, $categoryId]);
+
+        return $result !== false;
+    }
+
+    public function deleteCategory(int $categoryId): bool {
+        $query = "DELETE FROM categories WHERE id = $1";
+        $result = pg_query_params($this->conn, $query, [$categoryId]);
+
+        return $result !== false;
+    }
 
 
     public function getReviewsByProductId($productId): array {

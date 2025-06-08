@@ -171,6 +171,7 @@ $attributes = $db->getProductsAttributes($productId);
                 <div class="mb-3">
                     <label for="category_id" class="form-label">Kategoria</label>
                     <select id="category_id" name="category_id" class="form-select">
+                        <option value="" <?= $product->categoryId === null ? 'selected' : '' ?>>Brak kategori</option>
 
                         <?php foreach ($db->getAllCategories() as $category): ?>
                             <option value="<?= htmlspecialchars($category->id) ?>" <?= $product->categoryId == $category->id ? 'selected' : '' ?>><?= htmlspecialchars($category->name) ?></option>

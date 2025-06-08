@@ -164,7 +164,7 @@ if ($user->hasAddress()) {
                 <div class="card-body">
                     <h5 class="card-title text-warning">Edytuj bazę produktów</h5>
                     <p class="card-text">Masz uprawnienia administratora, możesz zarządzać produktami.</p>
-                    <a href="admin/products.php" class="btn btn-warning">Przejdź do panelu</a>
+                    <a href="./admin/editDbAdminPage.php" class="btn btn-warning">Przejdź do panelu</a>
                 </div>
             </div>
         </div>

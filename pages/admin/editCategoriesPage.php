@@ -12,13 +12,6 @@ if(!$loginManager->isLoggedIn() || !$loginManager->isAdmin()){
     header('Location: ../../index.php');
     exit;
 }
-
-if(!isset($_GET['product'])){
-  header('Location: ../index.php');
-  exit;
-}
-
-$productId = $_GET['product'];
 ?>
 
 <!DOCTYPE html>
@@ -35,55 +28,63 @@ $productId = $_GET['product'];
 
 <?php
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $attributeId = $_POST['attribute_id'] ?? null;
+    $categoryId = $_POST['category_id'] ?? null;
     $action = $_POST['action'] ?? null;
     $value = $_POST['value'] ?? null;
 
-    if (!$attributeId || !is_numeric($attributeId)) {
-        SessionStorage::sendAlert("Nieprawidłowe ID atrybutu.", "danger");
-        header("Location: editProductAttributesPage.php?product_id=".urlencode($productId));
-        exit;
-    }
 
-    // Zapisywanie atrybutu
+    // Zapisywanie kategori
     if ($action === 'save') {
         if ($value === null || trim($value) === '') {
-            SessionStorage::sendAlert("Wartość atrybutu nie może być pusta.", "danger");
-        } else {
-            $success = $db->updateProductAttribute((int)$attributeId, trim($value));
+            SessionStorage::sendAlert("Wartość kategorii nie może być pusta.", "danger");
+        }
+        else if (!$categoryId || !is_numeric($categoryId)) {
+            SessionStorage::sendAlert("Nieprawidłowe ID kategorii.", "danger");
+            header("Location: editCategoriesPage.php");
+            exit;
+        } 
+        else {
+            $success = $db->updateCategory((int)$categoryId, trim($value));
             if ($success) {
-                SessionStorage::sendAlert("Atrybut został zapisany.", "success");
+                SessionStorage::sendAlert("Kategoria została zapisana.", "success");
             } else {
-                SessionStorage::sendAlert("Wystąpił błąd podczas zapisu atrybutu.", "danger");
+                SessionStorage::sendAlert("Wystąpił błąd podczas zapisu kategorii.", "danger");
             }
         }
     } 
-    // Usuwanie atrybutu
+    // Usuwanie kategori
     elseif($action === 'delete') {
-
-        $success = $db->deleteProductAttribute((int)$attributeId);
-        if ($success) {
-            SessionStorage::sendAlert("Atrybut został usunięty.", "success");
-        } else {
-            SessionStorage::sendAlert("Wystąpił błąd podczas usuwania atrybutu.", "danger");
+        if (!$categoryId || !is_numeric($categoryId)) {
+            SessionStorage::sendAlert("Nieprawidłowe ID kategorii.", "danger");
+            header("Location: editCategoriesPage.php");
+            exit;
         }
+        else{
+            $success = $db->deleteCategory((int)$categoryId);
+            if ($success) {
+                SessionStorage::sendAlert("Kategoria została usunięta.", "success");
+            } else {
+                SessionStorage::sendAlert("Wystąpił błąd podczas usuwania kategorii.", "danger");
+            }
+        }
+       
     }
-    // Dodawanie atrybutu
+    // Dodawanie kategori
     elseif($action === 'add'){
 
         if ($value === null || trim($value) === '') {
-            SessionStorage::sendAlert("Wartość nowego atrybutu nie może być pusta.", "danger");
+            SessionStorage::sendAlert("Wartość nowej kategorii nie może być pusta.", "danger");
         } else {
-            $added = $db->addProductAttribute((int)$productId, (int)$attributeId, trim($value));
+            $added = $db->addCategory(trim($value));
             if ($added) {
-                SessionStorage::sendAlert("Nowy atrybut został dodany.", "success");
+                SessionStorage::sendAlert("Nowa kategoria została dodany.", "success");
             } else {
-                SessionStorage::sendAlert("Wystąpił błąd podczas dodawania atrybutu.", "danger");
+                SessionStorage::sendAlert("Wystąpił błąd podczas dodawania kategorii.", "danger");
             }
         }
     }
 
-    header("Location: editProductAttributesPage.php?product=".urlencode($productId));
+    header("Location: editCategoriesPage.php");
     exit;
 }
 ?>
@@ -144,71 +145,52 @@ SessionStorage::renderAlert();
   </div>
 </nav>
 
-<!-- Return button -->
-<a class="btn btn-secondary mx-5 mt-2" href="../productPage.php?product=<?= htmlspecialchars($productId)?>">Wróc na strone produktu</a>
-
 <?php 
-$product = $db->getProductById($productId);
-if (!$product) {
-    header('Location: ../../index.php');
-    exit;
-}
-
-$attributes = $db->getProductsAttributes($productId);
-$missingAttributes = $db->getProductMissingAttributes($productId);
+$categories = $db->getAllCategories();
 ?>
+
 <!-- Formularz edycji -->
 <div class="card my-4 mx-5">
     <div class="card-header bg-primary text-white">
-        Edycja atrybutów produktu
+        Edycja kategorii
     </div>
     <div class="card-body">
 
-        <!-- Dodaj atrybut -->
+        <!-- Dodaj kategorie -->
         <div class="card mb-3">
             <div class="card-body border border-success">
-                <h5 class="card-title">Dodaj nowy atrybut</h5>
+                <h5 class="card-title">Dodaj nową kategorię</h5>
 
                 <form method="post" class="d-flex gap-2 align-items-center">
                     <input type="hidden" name="action" value="add" />
-                    <input type="hidden" name="product_id" value="<?= htmlspecialchars($productId) ?>" />
-
-                    <select name="attribute_id" class="form-select flex-fill" required>
-                        <?php foreach ($missingAttributes as $attr): ?>
-                            <option value="<?= htmlspecialchars($attr['id']) ?>">
-                                <?= htmlspecialchars($attr['name']) ?><?= $attr['unit'] ? ' (' . htmlspecialchars($attr['unit']) . ')' : '' ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-
-                    <input type="text" name="value" class="form-control flex-fill" placeholder="Wartość atrybutu" required />
-
+                    <input type="text" name="value" class="form-control flex-fill" placeholder="Nazwa kategorii" maxlength="255" required />
                     <button type="submit" class="btn btn-success flex-shrink-0">Dodaj</button>
                 </form>
             </div>
         </div>
 
 
-        <?php foreach ($attributes as $attr): ?>
+        <?php foreach ($categories as $category): ?>
             <div class="card mb-3">
                 <div class="card-body">
 
-                    <p class="mb-0 fw-bold"> <?= htmlspecialchars($attr['name']) ?> <?= $attr['unit'] ? '(' . htmlspecialchars($attr['unit']) . ')' : '' ?></p><br>
+                    <p class="mb-0 fw-bold"> <?= htmlspecialchars($category->name) ?></p><br>
                     
                     <div class="d-flex align-items-center gap-2 flex-wrap">
 
                         <!-- Zapisywanie zmian -->
                         <form method="post" class="d-flex align-items-center gap-2 mb-0 flex-grow-1">
-                            <input type="hidden" name="attribute_id" value="<?= $attr['id'] ?>" />
-                            <input type="text" name="value" class="form-control flex-grow-1" value="<?= htmlspecialchars($attr['value']) ?>" required/>
-                            <button type="submit" name="action" value="save" class="btn btn-sm btn-primary">Zapisz</button>
+                            <input type="hidden" name="action" value="save" />
+                            <input type="hidden" name="category_id" value="<?= $category->id ?>" />
+                            <input type="text" name="value" class="form-control flex-grow-1" value="<?= htmlspecialchars($category->name) ?>" maxlength="255" required/>
+                            <button type="submit" class="btn btn-sm btn-primary">Zapisz</button>
                         </form>
 
-                        <!-- Usuwanie atrybutów -->
+                        <!-- Usuwanie kategorii -->
                         <form method="post" class="mb-0">
                             <input type="hidden" name="action" value="delete" />
-                            <input type="hidden" name="attribute_id" value="<?= $attr['id'] ?>" />
-                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Na pewno usunąć ten atrybut?');">Usuń</button>
+                            <input type="hidden" name="category_id" value="<?= $category->id ?>" />
+                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Na pewno usunąć tą kategorie ?');">Usuń</button>
                         </form>
 
                     </div>
