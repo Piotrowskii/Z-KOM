@@ -28,11 +28,11 @@ CREATE TABLE permissions (
 
 CREATE TABLE addresses (
     id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    street_name TEXT NOT NULL,
+    street_name VARCHAR(255) NOT NULL,
     house_number VARCHAR(10) NOT NULL,
-    city TEXT NOT NULL,
+    city VARCHAR(255) NOT NULL,
     postal_code VARCHAR(20) NOT NULL,
-    country TEXT NOT NULL
+    country VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE users (
@@ -113,12 +113,12 @@ CREATE TABLE order_items (
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE SET NULL
 );
 
-CREATE TABLE reviews (
+CREATE TABLE product_reviews (
     id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id INT NOT NULL,
     product_id INT NOT NULL,
     rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
-    comment TEXT NOT NULL,
+    comment VARCHAR(1024) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
@@ -128,7 +128,7 @@ CREATE TABLE store_reviews (
     id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id INT NOT NULL,
     rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
-    comment TEXT NOT NULL,
+    comment VARCHAR(1024) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
@@ -138,11 +138,11 @@ SELECT store_reviews.user_id, store_reviews.rating, store_reviews.comment, store
 FROM store_reviews JOIN users ON store_reviews.user_id = users.id;
 
 CREATE VIEW reviews_view AS
-SELECT reviews.user_id, reviews.product_id, reviews.rating, reviews.comment, reviews.created_at, users.name, users.surname
-FROM reviews JOIN users ON reviews.user_id = users.id;
+SELECT product_reviews.user_id, product_reviews.product_id, product_reviews.rating, product_reviews.comment, product_reviews.created_at, users.name, users.surname
+FROM product_reviews JOIN users ON product_reviews.user_id = users.id;
 
 CREATE OR REPLACE VIEW ProductView AS
-SELECT products.*, (SELECT COALESCE(ROUND(AVG(reviews.rating), 2), 0) FROM reviews WHERE reviews.product_id = products.id) AS rating, discounts.discount_percent,ROUND(products.price * (1 - COALESCE(discounts.discount_percent, 0) / 100), 2) AS final_price
+SELECT products.*, (SELECT COALESCE(ROUND(AVG(product_reviews.rating), 2), 0) FROM product_reviews WHERE product_reviews.product_id = products.id) AS rating, discounts.discount_percent,ROUND(products.price * (1 - COALESCE(discounts.discount_percent, 0) / 100), 2) AS final_price
 FROM products LEFT JOIN discounts ON discounts.id = products.discount_id AND discounts.active = TRUE AND CURRENT_DATE BETWEEN discounts.start_date AND discounts.end_date;
 
 CREATE OR REPLACE VIEW OrderItemView AS
@@ -550,7 +550,7 @@ INSERT INTO product_attributes (product_id, attribute_id, value) VALUES
 
 
 -- Recenzje
-INSERT INTO reviews (user_id, product_id, rating, comment) VALUES
+INSERT INTO product_reviews (user_id, product_id, rating, comment) VALUES
 (1, 1, 5, 'Świetny laptop, działa bardzo szybko.'),
 (2, 1, 4, 'Dobra jakość, bateria mogłaby być lepsza.'),
 (3, 2, 3, 'Przeciętny, ale za tę cenę w porządku.'),

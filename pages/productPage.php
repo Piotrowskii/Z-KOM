@@ -276,7 +276,7 @@ $reviews = $db->getReviewsByProductId($product->id);
 
         <div class="mb-3">
             <label for="review_comment" class="form-label">Komentarz</label>
-            <textarea id="review_comment" name="review_comment" class="form-control" rows="3" required></textarea>
+            <textarea id="review_comment" name="review_comment" class="form-control" rows="3" maxlength="1024" required></textarea>
         </div>
 
         <button type="submit" class="btn btn-primary">Dodaj opinię</button>

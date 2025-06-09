@@ -211,27 +211,27 @@ if ($user->hasAddress()) {
 
           <div class="mb-3">
             <label for="street" class="form-label">Ulica</label>
-            <input type="text" class="form-control" id="street" name="street" value="<?= htmlspecialchars($address->street ?? '') ?>" required>
+            <input type="text" class="form-control" id="street" name="street" value="<?= htmlspecialchars($address->street ?? '') ?>" maxlength="255" required>
           </div>
 
           <div class="mb-3">
             <label for="houseNumber" class="form-label">Numer domu</label>
-            <input type="text" class="form-control" id="houseNumber" name="house_number" value="<?= htmlspecialchars($address->houseNumber ?? '') ?>" required>
+            <input type="text" class="form-control" id="houseNumber" name="house_number" value="<?= htmlspecialchars($address->houseNumber ?? '') ?>" maxlength="10" required>
           </div>
 
           <div class="mb-3">
             <label for="city" class="form-label">Miasto</label>
-            <input type="text" class="form-control" id="city" name="city" value="<?= htmlspecialchars($address->city ?? '') ?>" required>
+            <input type="text" class="form-control" id="city" name="city" value="<?= htmlspecialchars($address->city ?? '') ?>" maxlength="255" required>
           </div>
 
           <div class="mb-3">
             <label for="postalCode" class="form-label">Kod pocztowy</label>
-            <input type="text" class="form-control" id="postalCode" name="postal_code" value="<?= htmlspecialchars($address->postalCode ?? '') ?>" required>
+            <input type="text" class="form-control" id="postalCode" name="postal_code" value="<?= htmlspecialchars($address->postalCode ?? '') ?>" maxlength="20" required>
           </div>
 
           <div class="mb-3">
             <label for="country" class="form-label">Kraj</label>
-            <input type="text" class="form-control" id="country" name="country" value="<?= htmlspecialchars($address->country ?? '') ?>" required>
+            <input type="text" class="form-control" id="country" name="country" value="<?= htmlspecialchars($address->country ?? '') ?>" maxlength="255" required>
           </div>
 
         </div>

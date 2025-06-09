@@ -27,177 +27,8 @@ class Db {
         }
     }
 
-    public function getAllProductsFromOrder(int $orderId): array {
-        $query = "SELECT * FROM OrderItemView WHERE order_id = $1";
-        $result = pg_query_params($this->conn, $query, [$orderId]);
 
-        $orderItems = [];
-
-        if($result){
-            while ($row = pg_fetch_assoc($result)) {
-                $orderItems[] = new OrderItemViewModel($row);
-            }
-        }
-
-        return $orderItems;
-    }
-
-    public function insertOrder(int $userId, float $total, array $orderItems): ?int {
-        try {
-            pg_query($this->conn, 'BEGIN');
-
-            $orderQuery = "INSERT INTO orders (user_id, total) VALUES ($1, $2) RETURNING id";
-            $orderResult = pg_query_params($this->conn, $orderQuery, [$userId, $total]);
-
-            if (!$orderResult || pg_num_rows($orderResult) !== 1) {
-                throw new Exception("Nie udało się utworzyć rekordu zamówienia.");
-            }
-
-            $orderRow = pg_fetch_assoc($orderResult);
-            $orderId = $orderRow['id'];
-
-            foreach ($orderItems as $item) {
-                $itemQuery = "INSERT INTO order_items (order_id, product_id, quantity, price) VALUES ($1, $2, $3, $4)";
-                $res1 = pg_query_params($this->conn, $itemQuery, [$orderId, $item['product_id'], $item['qty'], $item['price']]);
-
-                $updateStockQuery = "UPDATE products SET stock = stock - $1 WHERE id = $2";
-                $res2 = pg_query_params($this->conn, $updateStockQuery, [$item['qty'], $item['product_id']]);
-
-                if (!$res1 || !$res2) {
-                    throw new Exception("Błąd podczas zapisywania pozycji zamówienia lub aktualizacji stanu magazynowego.");
-                }
-            }
-
-            pg_query($this->conn, 'COMMIT');
-            return $orderId;
-        } catch (Exception $e) {
-            pg_query($this->conn, 'ROLLBACK');
-            return null;
-        }
-    }
-
-    public function doesOrderBelongsToUser(int $orderId, int $userId): bool {
-        $query = "SELECT 1 FROM orders WHERE id = $1 AND user_id = $2";
-        $result = pg_query_params($this->conn, $query, [$orderId, $userId]);
-        return $result && pg_num_rows($result) > 0;
-    }
-
-    public function getOrderById(int $orderId): ?Order {
-        $query = "SELECT * FROM orders WHERE id = $1";
-        $result = pg_query_params($this->conn, $query, [$orderId]);
-
-        if ($result && pg_num_rows($result) === 1) {
-            $data = pg_fetch_assoc($result);
-            return new Order($data);
-        }
-        return null;
-    }
-
-    public function getOrdersByUserId(int $userId): array {
-        $query = "SELECT * FROM orders WHERE user_id = $1 ORDER BY created_at DESC";
-        $result = pg_query_params($this->conn, $query, [$userId]);
-
-        $orders = [];
-
-        if ($result) {
-            while ($row = pg_fetch_assoc($result)) {
-                $orders[] = new Order($row);
-            }
-        }
-
-        return $orders;
-    }
-
-    public function getAllDiscounts(): array {
-        $query = "SELECT * FROM discounts ORDER BY start_date DESC";
-        $result = pg_query($this->conn, $query);
-
-        $discounts = [];
-
-        if ($result) {
-            while ($row = pg_fetch_assoc($result)) {
-                $discounts[] = new Discount($row);
-            }
-        }
-
-        return $discounts;
-    }
-
-    public function getAllCategories(): array {
-        $query = "SELECT * FROM categories ORDER BY name ASC";
-        $result = pg_query($this->conn, $query);
-
-        $categories = [];
-
-        if ($result) {
-            while ($row = pg_fetch_assoc($result)) {
-                $categories[] = new Category($row);
-            }
-        }
-
-        return $categories;
-    }
-
-    public function addCategory(string $name): bool {
-        $query = "INSERT INTO categories (name) VALUES ($1)";
-        $result = pg_query_params($this->conn, $query, [$name]);
-
-        return $result !== false;
-    }
-
-    public function updateCategory(int $categoryId, string $name): bool {
-        $query = "UPDATE categories SET name = $1 WHERE id = $2";
-        $result = pg_query_params($this->conn, $query, [$name, $categoryId]);
-
-        return $result !== false;
-    }
-
-    public function deleteCategory(int $categoryId): bool {
-        $query = "DELETE FROM categories WHERE id = $1";
-        $result = pg_query_params($this->conn, $query, [$categoryId]);
-
-        return $result !== false;
-    }
-
-    public function getAllAttributes(): array {
-        $query = "SELECT * FROM attributes ORDER BY name ASC";
-        $result = pg_query($this->conn, $query);
-
-        $attributes = [];
-
-        if ($result) {
-            while ($row = pg_fetch_assoc($result)) {
-                $attributes[] = new DbAttribute($row);
-            }
-        }
-
-        return $attributes;
-    }
-
-    public function addAttribute(string $name, ?string $unit): bool {
-        $query = "INSERT INTO attributes (name, unit) VALUES ($1, $2)";
-        $result = pg_query_params($this->conn, $query, [$name, $unit]);
-
-        return $result !== false;
-    }
-
-    public function updateAttribute(int $attributeId, string $name, ?string $unit): bool {
-        $query = "UPDATE attributes SET name = $1, unit = $2 WHERE id = $3";
-        $result = pg_query_params($this->conn, $query, [$name, $unit, $attributeId]);
-
-        return $result !== false;
-    }
-
-    public function deleteAttribute(int $attributeId): bool {
-        $query = "DELETE FROM attributes WHERE id = $1";
-        $result = pg_query_params($this->conn, $query, [$attributeId]);
-
-        return $result !== false;
-    }
-
-
-
-
+    // Zarządzanie użytkownikami
     public function loginUser($email, $password): bool {
 
         $query = "SELECT id, password_hash, permission_id FROM Users WHERE email = $1";
@@ -297,6 +128,165 @@ class Db {
     }
 
 
+
+    //Zarządzanie zamówieniami
+    public function getAllProductsFromOrder(int $orderId): array {
+        $query = "SELECT * FROM OrderItemView WHERE order_id = $1";
+        $result = pg_query_params($this->conn, $query, [$orderId]);
+
+        $orderItems = [];
+
+        if($result){
+            while ($row = pg_fetch_assoc($result)) {
+                $orderItems[] = new OrderItemViewModel($row);
+            }
+        }
+
+        return $orderItems;
+    }
+
+    public function insertOrder(int $userId, float $total, array $orderItems): ?int {
+        try {
+            pg_query($this->conn, 'BEGIN');
+
+            $orderQuery = "INSERT INTO orders (user_id, total) VALUES ($1, $2) RETURNING id";
+            $orderResult = pg_query_params($this->conn, $orderQuery, [$userId, $total]);
+
+            if (!$orderResult || pg_num_rows($orderResult) !== 1) {
+                throw new Exception("Nie udało się utworzyć rekordu zamówienia.");
+            }
+
+            $orderRow = pg_fetch_assoc($orderResult);
+            $orderId = $orderRow['id'];
+
+            foreach ($orderItems as $item) {
+                $itemQuery = "INSERT INTO order_items (order_id, product_id, quantity, price) VALUES ($1, $2, $3, $4)";
+                $res1 = pg_query_params($this->conn, $itemQuery, [$orderId, $item['product_id'], $item['qty'], $item['price']]);
+
+                $updateStockQuery = "UPDATE products SET stock = stock - $1 WHERE id = $2";
+                $res2 = pg_query_params($this->conn, $updateStockQuery, [$item['qty'], $item['product_id']]);
+
+                if (!$res1 || !$res2) {
+                    throw new Exception("Błąd podczas zapisywania pozycji zamówienia lub aktualizacji stanu magazynowego.");
+                }
+            }
+
+            pg_query($this->conn, 'COMMIT');
+            return $orderId;
+        } catch (Exception $e) {
+            pg_query($this->conn, 'ROLLBACK');
+            return null;
+        }
+    }
+
+    public function doesOrderBelongsToUser(int $orderId, int $userId): bool {
+        $query = "SELECT 1 FROM orders WHERE id = $1 AND user_id = $2";
+        $result = pg_query_params($this->conn, $query, [$orderId, $userId]);
+        return $result && pg_num_rows($result) > 0;
+    }
+
+    public function getOrderById(int $orderId): ?Order {
+        $query = "SELECT * FROM orders WHERE id = $1";
+        $result = pg_query_params($this->conn, $query, [$orderId]);
+
+        if ($result && pg_num_rows($result) === 1) {
+            $data = pg_fetch_assoc($result);
+            return new Order($data);
+        }
+        return null;
+    }
+
+    public function getOrdersByUserId(int $userId): array {
+        $query = "SELECT * FROM orders WHERE user_id = $1 ORDER BY created_at DESC";
+        $result = pg_query_params($this->conn, $query, [$userId]);
+
+        $orders = [];
+
+        if ($result) {
+            while ($row = pg_fetch_assoc($result)) {
+                $orders[] = new Order($row);
+            }
+        }
+
+        return $orders;
+    }
+
+    //Zarządzanie kategoriami
+    public function getAllCategories(): array {
+        $query = "SELECT * FROM categories ORDER BY name ASC";
+        $result = pg_query($this->conn, $query);
+
+        $categories = [];
+
+        if ($result) {
+            while ($row = pg_fetch_assoc($result)) {
+                $categories[] = new Category($row);
+            }
+        }
+
+        return $categories;
+    }
+
+    public function addCategory(string $name): bool {
+        $query = "INSERT INTO categories (name) VALUES ($1)";
+        $result = pg_query_params($this->conn, $query, [$name]);
+
+        return $result !== false;
+    }
+
+    public function updateCategory(int $categoryId, string $name): bool {
+        $query = "UPDATE categories SET name = $1 WHERE id = $2";
+        $result = pg_query_params($this->conn, $query, [$name, $categoryId]);
+
+        return $result !== false;
+    }
+
+    public function deleteCategory(int $categoryId): bool {
+        $query = "DELETE FROM categories WHERE id = $1";
+        $result = pg_query_params($this->conn, $query, [$categoryId]);
+
+        return $result !== false;
+    }
+
+    //Zarządzania atrybutami
+    public function getAllAttributes(): array {
+        $query = "SELECT * FROM attributes ORDER BY name ASC";
+        $result = pg_query($this->conn, $query);
+
+        $attributes = [];
+
+        if ($result) {
+            while ($row = pg_fetch_assoc($result)) {
+                $attributes[] = new DbAttribute($row);
+            }
+        }
+
+        return $attributes;
+    }
+
+    public function addAttribute(string $name, ?string $unit): bool {
+        $query = "INSERT INTO attributes (name, unit) VALUES ($1, $2)";
+        $result = pg_query_params($this->conn, $query, [$name, $unit]);
+
+        return $result !== false;
+    }
+
+    public function updateAttribute(int $attributeId, string $name, ?string $unit): bool {
+        $query = "UPDATE attributes SET name = $1, unit = $2 WHERE id = $3";
+        $result = pg_query_params($this->conn, $query, [$name, $unit, $attributeId]);
+
+        return $result !== false;
+    }
+
+    public function deleteAttribute(int $attributeId): bool {
+        $query = "DELETE FROM attributes WHERE id = $1";
+        $result = pg_query_params($this->conn, $query, [$attributeId]);
+
+        return $result !== false;
+    }
+
+
+    //Zarządzanie produktami
     public function getAllProductsFromCategory($categoryId,$orderBy): array{
         $query = "SELECT * FROM ProductView WHERE category_id = $1 {$orderBy}";
         $result = pg_query_params($this->conn, $query, [$categoryId]);
@@ -436,8 +426,7 @@ class Db {
         return $missingAttributes;
     }
 
-
-
+    //Zarządzanie recenzjami
     public function getReviewsByProductId($productId): array {
         $query = "SELECT * FROM reviews_view WHERE product_id = $1 ORDER BY created_at DESC";
         $result = pg_query_params($this->conn, $query, [$productId]);
@@ -469,16 +458,42 @@ class Db {
     }
 
     public function addReview($userId, $productId, $rating, $comment): void {
-        $query = "INSERT INTO reviews (user_id, product_id, rating, comment) VALUES ($1, $2, $3, $4)";
+        $query = "INSERT INTO product_reviews (user_id, product_id, rating, comment) VALUES ($1, $2, $3, $4)";
         pg_query_params($this->conn, $query, [$userId, $productId, $rating, $comment]);
     }  
 
     public function hasUserReviewedProduct($userId, $productId): bool {
-        $query = "SELECT 1 FROM reviews WHERE user_id = $1 AND product_id = $2 LIMIT 1";
+        $query = "SELECT 1 FROM product_reviews WHERE user_id = $1 AND product_id = $2 LIMIT 1";
         $result = pg_query_params($this->conn, $query, [$userId, $productId]);
 
         return $result && pg_num_rows($result) > 0;
     }
+
+
+
+    public function getAllDiscounts(): array {
+        $query = "SELECT * FROM discounts ORDER BY start_date DESC";
+        $result = pg_query($this->conn, $query);
+
+        $discounts = [];
+
+        if ($result) {
+            while ($row = pg_fetch_assoc($result)) {
+                $discounts[] = new Discount($row);
+            }
+        }
+
+        return $discounts;
+    }
+
+    
+
+
+    
+
+
+
+    
 
 
 
