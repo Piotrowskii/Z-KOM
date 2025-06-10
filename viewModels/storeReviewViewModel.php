@@ -1,6 +1,7 @@
 <?php
 
 class StoreReviewViewModel {
+    public int $id;
     public int $userId;
     public float $rating;
     public string $comment;
@@ -9,6 +10,7 @@ class StoreReviewViewModel {
     public string $surname;
 
     public function __construct(array $data) {
+        $this->id = (int) $data['id'];
         $this->userId = (int)$data['user_id'] ?? null;
         $this->rating = $data['rating'] ?? null;
         $this->comment = $data['comment'] ?? null;

@@ -196,8 +196,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
   <table class="table table-bordered mt-3">
     <thead class="table-light">
         <tr>
-            <th scope="col">Atrybut</th>
-            <th scope="col">Wartość</th>
+            <th scope="col">Atrybuty</th>
+            <th scope="col">Wartości</th>
         </tr>
     </thead>
     <tbody>

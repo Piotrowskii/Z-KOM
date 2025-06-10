@@ -1,6 +1,7 @@
 <?php
 
 class ReviewView {
+    public int $id;
     public int $userId;
     public int $productId;
     public float $rating;
@@ -10,6 +11,7 @@ class ReviewView {
     public string $surname;
 
     public function __construct(array $data) {
+        $this->id = (int) $data['id'];
         $this->userId = (int) $data['user_id'];
         $this->productId = (int) $data['product_id'];
         $this->rating = (float) $data['rating'];

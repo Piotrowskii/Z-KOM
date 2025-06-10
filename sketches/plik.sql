@@ -134,18 +134,18 @@ CREATE TABLE store_reviews (
 );
 
 CREATE VIEW store_reviews_view AS
-SELECT store_reviews.user_id, store_reviews.rating, store_reviews.comment, store_reviews.created_at, users.name, users.surname
+SELECT store_reviews.id, store_reviews.user_id, store_reviews.rating, store_reviews.comment, store_reviews.created_at, users.name, users.surname
 FROM store_reviews JOIN users ON store_reviews.user_id = users.id;
 
 CREATE VIEW reviews_view AS
-SELECT product_reviews.user_id, product_reviews.product_id, product_reviews.rating, product_reviews.comment, product_reviews.created_at, users.name, users.surname
+SELECT product_reviews.id, product_reviews.user_id, product_reviews.product_id, product_reviews.rating, product_reviews.comment, product_reviews.created_at, users.name, users.surname
 FROM product_reviews JOIN users ON product_reviews.user_id = users.id;
 
-CREATE OR REPLACE VIEW ProductView AS
+CREATE OR REPLACE VIEW product_view AS
 SELECT products.*, (SELECT COALESCE(ROUND(AVG(product_reviews.rating), 2), 0) FROM product_reviews WHERE product_reviews.product_id = products.id) AS rating, discounts.discount_percent,ROUND(products.price * (1 - COALESCE(discounts.discount_percent, 0) / 100), 2) AS final_price
 FROM products LEFT JOIN discounts ON discounts.id = products.discount_id AND discounts.active = TRUE AND CURRENT_DATE BETWEEN discounts.start_date AND discounts.end_date;
 
-CREATE OR REPLACE VIEW OrderItemView AS
+CREATE OR REPLACE VIEW order_item_view AS
 SELECT products.name, order_items.quantity, order_items.price, products.image_url, order_items.order_id, order_items.product_id AS id
 FROM order_items LEFT JOIN products ON products.id = order_items.product_id;
 

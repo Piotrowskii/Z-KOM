@@ -121,6 +121,17 @@ SessionStorage::renderAlert();
       </div>
     </div>
 
+    <!-- Usuwanie recenzji -->
+    <div class="col-md-6">
+      <div class="card shadow border border-danger">
+        <div class="card-body">
+          <h5 class="card-title">Usuń recenzje</h5>
+          <p class="card-text">Kliknij poniższy przycisk, aby usunąć recenzje produktów.</p>
+          <a href="deleteReviewsPage.php" class="btn btn-danger">Usun recenzje</a>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 

@@ -131,7 +131,7 @@ class Db {
 
     //Zarządzanie zamówieniami
     public function getAllProductsFromOrder(int $orderId): array {
-        $query = "SELECT * FROM OrderItemView WHERE order_id = $1";
+        $query = "SELECT * FROM order_item_view WHERE order_id = $1";
         $result = pg_query_params($this->conn, $query, [$orderId]);
 
         $orderItems = [];
@@ -260,6 +260,43 @@ class Db {
         return null; 
     }
 
+    //Zarządzania opiniami
+    public function getProductReviewsByComment(string $input): array {
+        $query = "SELECT * FROM reviews_view WHERE comment ILIKE $1";
+        $result = pg_query_params($this->conn, $query, ['%'.$input.'%']);
+
+        $reviews = [];
+        while ($row = pg_fetch_assoc($result)) {
+            $reviews[] = new ReviewView($row);
+        }
+        return $reviews;
+    }
+
+    public function getStoreReviewsByComment(string $input): array {
+        $query = "SELECT * FROM store_reviews_view WHERE comment ILIKE $1";
+        $result = pg_query_params($this->conn, $query, ['%'.$input.'%']);
+
+        $reviews = [];
+        while ($row = pg_fetch_assoc($result)) {
+            $reviews[] = new StoreReviewViewModel($row); 
+        }
+        return $reviews;
+    }
+
+    public function deleteProductReviewById(int $reviewId): bool {
+        $query = "DELETE FROM product_reviews WHERE id = $1";
+        $result = pg_query_params($this->conn, $query, [$reviewId]);
+
+        return $result !== false;
+    }
+
+    public function deleteStoreReviewById(int $reviewId): bool {
+        $query = "DELETE FROM store_reviews WHERE id = $1";
+        $result = pg_query_params($this->conn, $query, [$reviewId]);
+
+        return $result !== false;
+    }
+
 
     //Zarządzania atrybutami
     public function getAllAttributes(): array {
@@ -301,7 +338,7 @@ class Db {
 
     //Zarządzanie produktami
     public function getAllProductsFromCategory($categoryId,$orderBy): array{
-        $query = "SELECT * FROM ProductView WHERE category_id = $1 {$orderBy}";
+        $query = "SELECT * FROM product_view WHERE category_id = $1 {$orderBy}";
         $result = pg_query_params($this->conn, $query, [$categoryId]);
 
         $products = [];
@@ -316,7 +353,7 @@ class Db {
     }
 
     public function getProductById($id): ?ProductViewModel {
-        $query = "SELECT * FROM ProductView WHERE id = $1";
+        $query = "SELECT * FROM product_view WHERE id = $1";
         $result = pg_query_params($this->conn, $query, [$id]);
 
         if ($result && pg_num_rows($result) > 0) {
@@ -363,7 +400,7 @@ class Db {
 
 
     public function getProductsBySearch($searchTerm,$orderBy): array {
-        $query = "SELECT * FROM ProductView WHERE LOWER(name) LIKE $1 OR LOWER(brand) LIKE $1 {$orderBy} LIMIT 30";
+        $query = "SELECT * FROM product_view WHERE LOWER(name) LIKE $1 OR LOWER(brand) LIKE $1 {$orderBy} LIMIT 30";
 
         $param = '%' . strtolower($searchTerm) . '%';
         $result = pg_query_params($this->conn, $query, [$param]);
