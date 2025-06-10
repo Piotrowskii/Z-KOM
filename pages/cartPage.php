@@ -210,8 +210,45 @@ if (!empty($_SESSION['cart'])) {
       <?php endif; ?>
     </div>
 
-    <!-- Panel podsumowania -->
+
     <div class="col-md-4">
+
+
+      <form action="./user/checkoutPage.php" method="post">
+
+      <!-- Panel karty kredytowej -->
+      <?php if($loginManager->isLoggedIn() && $loginManager->getLoggedInUser()->hasAddress()): ?>
+
+        <div class="card p-3 mb-2 shadow-sm">
+          <h4>Podaj kartę kredytową</h4>
+
+            <div class="mb-3">
+              <label for="card_number" class="form-label">Numer karty</label>
+              <input type="text" class="form-control" id="card_number" name="card_number" maxlength="19" pattern="\d{4} \d{4} \d{4} \d{4}" placeholder="1234 5678 9012 3456" required>
+            </div>
+
+            <div class="row mb-3">
+
+              <div class="col-md-6">
+                <label for="expiry_date" class="form-label">Data ważności</label>
+                <input type="text" class="form-control" id="expiry_date" name="expiry_date" maxlength="5" placeholder="MM/RR" required>
+              </div>
+
+              <div class="col-md-6">
+                <label for="cvv" class="form-label">CVV</label>
+                <input type="text" class="form-control" id="cvv" name="cvv" maxlength="3" maxlength="3" placeholder="123" required>
+              </div>
+              
+
+            </div>
+        </div>
+
+      <hr>
+      <?php endif; ?>
+
+      
+
+      <!-- Panel podsumowania -->
       <div class="card p-3 shadow-sm">
         <h4>Podsumowanie</h4>
         <hr>
@@ -219,10 +256,10 @@ if (!empty($_SESSION['cart'])) {
         <p class="mb-4">Łączna cena: <strong><?= number_format($totalPrice, 2) ?> zł</strong></p>
 
         <?php if($loginManager->isLoggedIn() && $loginManager->getLoggedInUser()->hasAddress()): ?>
-          <form action="./user/checkoutPage.php" method="post">
+          
             <input type="hidden" name="expectedTotal" value="<?= $totalPrice ?>">
             <button type="submit" class="btn btn-success w-100">Kup teraz</button>
-          </form>
+          
         <?php elseif($loginManager->isLoggedIn()): ?>
           <a class="btn btn-info w-100" href="userPage.php">Musisz posiadać adres</a>
         <?php else: ?>
@@ -230,7 +267,13 @@ if (!empty($_SESSION['cart'])) {
         <?php endif; ?>
       
       </div>
+
+      </form>
+
     </div>
+
+
+ 
 
   </div>
 </div>
@@ -248,6 +291,8 @@ if (!empty($_SESSION['cart'])) {
  
 
 <script src="../bootstrap/bootstrap.bundle.min.js"></script>
+
+<!-- Usuwanie tosta -->
 <script>
   const toastEl = document.getElementById('statusToast');
   if (toastEl) {
@@ -255,6 +300,46 @@ if (!empty($_SESSION['cart'])) {
     bsToast.show();
   }
 </script>
+
+<!-- Formatowanie karty kredytowej -->
+<script>
+const cardInput = document.getElementById('card_number');
+
+cardInput.addEventListener('input', function (event) {
+  let value = event.target.value.replace(/\D/g, ''); 
+  value = value.match(/.{1,4}/g)?.join(' ') ?? ''; 
+  event.target.value = value;
+});
+</script>
+
+<!-- Formatowanie daty wygaszenia karty -->
+<script>
+  const expiryInput = document.getElementById('expiry_date');
+
+  expiryInput.addEventListener('input', function(event) {
+    let value = event.target.value.replace(/\D/g, ''); 
+
+    if (value.length >= 1) {
+      if (!['0', '1'].includes(value[0])) {
+        value = ''; 
+      }
+    }
+
+    if (value.length >= 2) {
+      const month = parseInt(value.slice(0, 2));
+      if (month < 1 || month > 12) {
+        value = value.slice(0, 1); 
+      }
+    }
+
+    if (value.length > 2) {
+      value = value.slice(0, 2) + '/' + value.slice(2);
+    }
+
+    event.target.value = value.slice(0, 5); 
+  });
+</script>
+
 </body>
 </html>
 

@@ -16,7 +16,7 @@ $cartCount = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
     <link rel="stylesheet" href="../bootstrap/bootstrap.min.css"/>
     <link rel="stylesheet" href="../bootstrap/bootstrap-icons.min.css"/>
     <link rel="icon" href="../assets/images/general/pc.svg" sizes="any" type="image/svg+xml">
-    <title>Login</title>
+    <title>Rejestracja</title>
 </head>
 <body>
 

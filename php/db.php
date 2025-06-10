@@ -248,11 +248,16 @@ class Db {
         return $result !== false;
     }
 
-    public function doesCategoryExistById(int $categoryId): bool {
-        $query = "SELECT 1 FROM categories WHERE id = $1 LIMIT 1";
-        $result = pg_query_params($this->conn, $query, [$categoryId]);
+    public function getCategoryById($id): ?Category {
+        $query = "SELECT * FROM categories WHERE id = $1";
+        $result = pg_query_params($this->conn, $query, [$id]);
 
-        return $result && pg_fetch_row($result) !== false;
+        if ($result && pg_num_rows($result) > 0) {
+            $row = pg_fetch_assoc($result);
+            return new Category($row);
+        }
+
+        return null; 
     }
 
 

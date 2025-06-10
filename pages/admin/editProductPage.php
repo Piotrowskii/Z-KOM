@@ -29,7 +29,7 @@ $productId = $_GET['product'];
     <link rel="stylesheet" href="../../bootstrap/bootstrap.min.css"/>
     <link rel="stylesheet" href="../../bootstrap/bootstrap-icons.min.css"/>
     <link rel="icon" href="../../assets/images/general/pc.svg" sizes="any" type="image/svg+xml">
-    <title>Produkt</title>
+    <title>Edycja produktu</title>
 </head>
 <body>
 

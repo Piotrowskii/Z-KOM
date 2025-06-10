@@ -21,7 +21,7 @@ if(!$loginManager->isLoggedIn() || !$loginManager->isAdmin()){
     <link rel="stylesheet" href="../../bootstrap/bootstrap.min.css"/>
     <link rel="stylesheet" href="../../bootstrap/bootstrap-icons.min.css"/>
     <link rel="icon" href="../../assets/images/general/pc.svg" sizes="any" type="image/svg+xml">
-    <title>Produkt</title>
+    <title>Usuwanie produktu</title>
 </head>
 <body>
 

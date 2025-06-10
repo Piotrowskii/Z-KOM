@@ -22,7 +22,7 @@ if(!$loginManager->isLoggedIn() || !$loginManager->isAdmin()){
     <link rel="stylesheet" href="../../bootstrap/bootstrap.min.css"/>
     <link rel="stylesheet" href="../../bootstrap/bootstrap-icons.min.css"/>
     <link rel="icon" href="../../assets/images/general/pc.svg" sizes="any" type="image/svg+xml">
-    <title>Produkt</title>
+    <title>Edytowanie atrybutów</title>
 </head>
 <body>
 
@@ -38,9 +38,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'save') {
         if ($name === null || trim($name) === '') {
             SessionStorage::sendAlert("Nazwa atrybutu nie może być pusta.", "danger");
-        }
-        else if ($unit === null || trim($unit) === '') {
-            SessionStorage::sendAlert("Jednostka atrybutu nie może być pusta.", "danger");
         }
         else if (!$attributeId || !is_numeric($attributeId)) {
             SessionStorage::sendAlert("Nieprawidłowe ID atrybutu.", "danger");
@@ -74,8 +71,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($name === null || trim($name) === '') {
             SessionStorage::sendAlert("Wartość nowego atrybutu nie może być pusta.", "danger");
-        }else if ($unit === null || trim($unit) === '') {
-            SessionStorage::sendAlert("Jednostka atrybutu nie może być pusta.", "danger");
         }
         else {
             $added = $db->addAttribute(trim($name), trim($unit));
@@ -168,7 +163,7 @@ $attributes = $db->getAllAttributes();
                 <form method="post" class="d-flex gap-2 align-items-center">
                     <input type="hidden" name="action" value="add" />
                     <input type="text" name="name" class="form-control flex-fill" placeholder="Nazwa atrybutu" maxlength="255" required />
-                    <input type="text" name="unit" class="form-control flex-fill" placeholder="Znak jednostki" maxlength="50" required />
+                    <input type="text" name="unit" class="form-control flex-fill" placeholder="Znak jednostki" maxlength="50" />
                     <button type="submit" class="btn btn-success flex-shrink-0">Dodaj</button>
                 </form>
             </div>
@@ -188,7 +183,7 @@ $attributes = $db->getAllAttributes();
                             <input type="hidden" name="action" value="save" />
                             <input type="hidden" name="attribute_id" value="<?= $attribute->id ?>" />
                             <input type="text" name="name" class="form-control flex-grow-1" value="<?= htmlspecialchars($attribute->name) ?>" maxlength="255" required/>
-                            <input type="text" name="unit" class="form-control flex-grow-1" value="<?= htmlspecialchars($attribute->unit) ?>" maxlength="50" required/>
+                            <input type="text" name="unit" class="form-control flex-grow-1" value="<?= htmlspecialchars($attribute->unit) ?>" maxlength="50"/>
                             <button type="submit" class="btn btn-sm btn-primary">Zapisz</button>
                         </form>
 

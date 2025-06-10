@@ -3,6 +3,7 @@
 require_once '../../php/db.php';
 require_once '../../php/loginManager.php';
 require_once '../../php/SessionStorage.php';
+require_once '../../php/creditCardValidator.php';
 session_start();
 
 $db = new Db();
@@ -22,6 +23,35 @@ if (empty($cart)) {
     header("Location: ../cartPage.php");
     exit;
 }
+
+if(!isset($_POST['card_number']) || !isset($_POST['expiry_date']) || !isset($_POST['cvv'])){
+    SessionStorage::sendAlert("Musisz podać informacje o karcie kredytowej", "danger");
+    header("Location: ../cartPage.php");
+    exit;
+}
+
+$cardNumber = str_replace(' ', '', $_POST['card_number']);
+$expiryDate = $_POST['expiry_date'];
+$cvv = $_POST['cvv'];
+
+if (strlen($expiryDate) !== 5 || strpos($expiryDate, '/') !== 2) {
+    SessionStorage::sendAlert("Nieprawidłowy format daty ważności (oczekiwany MM/RR)", "danger");
+    header("Location: ../cartPage.php");
+    exit;
+}
+
+if (strlen($cvv) !== 3 || !ctype_digit($cvv)) {
+    SessionStorage::sendAlert("CVV musi składać się z dokładnie 3 cyfr", "danger");
+    header("Location: ../cartPage.php");
+    exit;
+}
+
+if(!creditCardValidator($cardNumber)){
+    SessionStorage::sendAlert("Nie poprawny numer karty kredytowej", "danger");
+    header("Location: ../cartPage.php");
+    exit;
+}
+
 
 $total = 0;
 $orderItems = [];

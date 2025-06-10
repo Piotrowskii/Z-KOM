@@ -23,7 +23,7 @@ if (!$loginManager->isLoggedIn()) {
     <link rel="stylesheet" href="../bootstrap/bootstrap.min.css"/>
     <link rel="stylesheet" href="../bootstrap/bootstrap-icons.min.css"/>
     <link rel="icon" href="../assets/images/general/pc.svg" sizes="any" type="image/svg+xml">
-    <title>Login</title>
+    <title>Panel użytkownika</title>
 </head>
 <body>
 <?php

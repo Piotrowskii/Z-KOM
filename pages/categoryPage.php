@@ -13,11 +13,13 @@ if(!isset($_GET['category'])){
 }
 
 $categoryId = $_GET['category'];
+$selectedCategory = $db->getCategoryById($categoryId);
 
-if(!$db->doesCategoryExistById($categoryId)){
+if(!$selectedCategory){
   header('Location: ../index.php');
   exit;
 }
+
 
 ?>
 
@@ -29,7 +31,7 @@ if(!$db->doesCategoryExistById($categoryId)){
     <link rel="stylesheet" href="../bootstrap/bootstrap.min.css"/>
     <link rel="stylesheet" href="../bootstrap/bootstrap-icons.min.css"/>
     <link rel="icon" href="../assets/images/general/pc.svg" sizes="any" type="image/svg+xml">
-    <title>Komputery</title>
+    <title><?= $selectedCategory->name ?></title>
 </head>
 <body>
 
@@ -87,7 +89,7 @@ if(!$db->doesCategoryExistById($categoryId)){
 
 <!-- Nagłówek -->
 <div class="my-5">
-    <h1 class="text-center">Komputery</h1>
+    <h1 class="text-center"><?= $selectedCategory->name ?></h1>
 </div>
 
 <!-- Sortowanie -->
