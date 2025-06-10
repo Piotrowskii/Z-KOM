@@ -131,25 +131,25 @@ $products = $db->getAllProductsFromOrder($orderId);
 
 <!-- Lista produktów -->
 <div class="mt-4">
-  <div class="row row-cols-1 row-cols-md-2 mx-5">
+  <div class="row row-cols-1 row-cols-md-2 mx-4 ">
 
     <?php foreach ($products as $item): ?>
       <div class="col mt-2">
-        <div class="card h-100 shadow-sm">
+        <div class="card h-100 shadow-sm ">
           <div class="row g-0 h-100">
 
             <div class="col-4">
               <?php if (!$item->doesProductExists()): ?>
-                <img src="../../assets/images/general/null.png" class="img-fluid rounded-start h-100 object-fit-cover" style="height:350px;width:350px;object-fit: cover" alt="produkt nie istnieje">
+                <img src="../../assets/images/general/null.png" class="img-fluid rounded-start h-100 object-fit-cover" style="height:250px;width:250px;object-fit: cover" alt="produkt nie istnieje">
               <?php elseif ($item->isImageLocal()): ?>
-                <img src="<?= '../' . htmlspecialchars($item->imageUrl) ?>" class="img-fluid rounded-start h-100 object-fit-cover" style="height:350px;width:350px;object-fit: cover" alt="<?= htmlspecialchars($item->name) ?>">
+                <img src="<?= '../' . htmlspecialchars($item->imageUrl) ?>" class="img-fluid rounded-start h-100 object-fit-cover" style="height:250px;width:250px;object-fit: cover" alt="<?= htmlspecialchars($item->name) ?>">
               <?php else: ?>
-                <img src="<?= htmlspecialchars($item->imageUrl) ?>" class="img-fluid rounded-start h-100 object-fit-cover" style="height:350px;width:350px;object-fit: cover" alt="<?= htmlspecialchars($item->name) ?>">
+                <img src="<?= htmlspecialchars($item->imageUrl) ?>" class="img-fluid rounded-start h-100 object-fit-cover" style="height:250px;width:250px;object-fit: cover" alt="<?= htmlspecialchars($item->name) ?>">
               <?php endif; ?>
             </div>
 
             <div class="col-8">
-              <div class="card-body d-flex flex-column h-100">
+              <div class="card-body d-flex flex-column h-100 justify-content-center">
 
                 <?php if ($item->doesProductExists()): ?>
                   <h5 class="card-title"><?= htmlspecialchars($item->name) ?></h5>
