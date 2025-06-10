@@ -6,6 +6,19 @@ session_start();
 $db = new Db();
 $loginManager = new LoginManager($db);
 $cartCount = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
+
+if(!isset($_GET['category'])){
+  header('Location: ../index.php');
+  exit;
+}
+
+$categoryId = $_GET['category'];
+
+if(!$db->doesCategoryExistById($categoryId)){
+  header('Location: ../index.php');
+  exit;
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -16,7 +29,7 @@ $cartCount = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
     <link rel="stylesheet" href="../bootstrap/bootstrap.min.css"/>
     <link rel="stylesheet" href="../bootstrap/bootstrap-icons.min.css"/>
     <link rel="icon" href="../assets/images/general/pc.svg" sizes="any" type="image/svg+xml">
-    <title>Smartphony</title>
+    <title>Komputery</title>
 </head>
 <body>
 
@@ -45,10 +58,11 @@ $cartCount = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
           </form>
         </li>
 
-        <li class="nav-item"><a class="nav-link" href="laptopPage.php">Laptopy</a></li>
-        <li class="nav-item"><a class="nav-link" href="smartphonePage.php">Smartfony</a></li>
-        <li class="nav-item"><a class="nav-link" href="computerPage.php">Komputery</a></li>
-        <li class="nav-item"><a class="nav-link" href="monitorPage.php">Monitory</a></li>
+        <?php $categories = $db->getAllCategories(); ?>
+
+        <?php foreach ($categories as $category) : ?>
+          <li class="nav-item"><a class="nav-link" href="categoryPage.php?category=<?= $category->id ?>"><?= $category->name ?></a></li>
+        <?php endforeach; ?>
 
 
         <li class="nav-item">
@@ -73,12 +87,14 @@ $cartCount = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
 
 <!-- Nagłówek -->
 <div class="my-5">
-    <h1 class="text-center">Smartphony</h1>
+    <h1 class="text-center">Komputery</h1>
 </div>
 
 <!-- Sortowanie -->
  <form method="GET" class="w-50 mx-auto mb-4">
   <div class="input-group">
+    <input type="hidden" name="category" value="<?= $categoryId ?>"/>
+
     <label class="input-group-text" for="sort">Sortuj:</label>
     <select class="form-select" id="sort" name="sort" onchange="this.form.submit()">
       <option value="rating" <?= ($_GET['sort'] ?? '') === 'rating' ? 'selected' : '' ?>>Najbardziej polecane</option>
@@ -109,7 +125,7 @@ switch ($sort) {
         break;
 }
 
-$products = $db->getAllProductsFromCategory(2,$orderBy);
+$products = $db->getAllProductsFromCategory($categoryId,$orderBy);
 ?>
 
 <div class="container mt-4">

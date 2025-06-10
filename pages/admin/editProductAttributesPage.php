@@ -109,7 +109,7 @@ SessionStorage::renderAlert();
 
         <!-- Seachbar -->
         <li class="nav-item me-auto px-4 w-100 d-flex align-items-center">
-          <form action="searchPage.php" method="get" class="w-100">
+          <form action="../searchPage.php" method="get" class="w-100">
             <div class="input-group">
               <input type="text" name="search" class="form-control" placeholder="Wyszukaj produkt" aria-label="Wyszukaj produkt" aria-describedby="button-addon2">
               <button class="btn btn-secondary" type="submit" id="button-addon2">
@@ -119,10 +119,11 @@ SessionStorage::renderAlert();
           </form>
         </li>
 
-        <li class="nav-item"><a class="nav-link" href="../laptopPage.php">Laptopy</a></li>
-        <li class="nav-item"><a class="nav-link" href="../smartphonePage.php">Smartfony</a></li>
-        <li class="nav-item"><a class="nav-link" href="../computerPage.php">Komputery</a></li>
-        <li class="nav-item"><a class="nav-link" href="../monitorPage.php">Monitory</a></li>
+        <?php $categories = $db->getAllCategories(); ?>
+
+        <?php foreach ($categories as $category) : ?>
+          <li class="nav-item"><a class="nav-link" href="../categoryPage.php?category=<?= $category->id ?>"><?= $category->name ?></a></li>
+        <?php endforeach; ?>
 
 
         <li class="nav-item">

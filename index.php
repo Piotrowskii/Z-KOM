@@ -6,6 +6,7 @@ session_start();
 $db = new Db();
 $loginManager = new LoginManager($db);
 $cartCount = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
+
 ?>
 
 <!DOCTYPE html>
@@ -46,11 +47,11 @@ $cartCount = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
           </form>
         </li>
 
-        <li class="nav-item"><a class="nav-link" href="./pages/laptopPage.php">Laptopy</a></li>
-        <li class="nav-item"><a class="nav-link" href="./pages/smartphonePage.php">Smartfony</a></li>
-        <li class="nav-item"><a class="nav-link" href="./pages/computerPage.php">Komputery</a></li>
-        <li class="nav-item"><a class="nav-link" href="./pages/monitorPage.php">Monitory</a></li>
+        <?php $categories = $db->getAllCategories(); ?>
 
+        <?php foreach ($categories as $category) : ?>
+          <li class="nav-item"><a class="nav-link" href="./pages/categoryPage.php?category=<?= $category->id ?>"><?= $category->name ?></a></li>
+        <?php endforeach; ?>
 
         <li class="nav-item">
           <a class="nav-link position-relative" href="./pages/cartPage.php">

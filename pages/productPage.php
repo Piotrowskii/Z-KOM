@@ -87,10 +87,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['review_rating'], $_PO
           </form>
         </li>
 
-        <li class="nav-item"><a class="nav-link" href="laptopPage.php">Laptopy</a></li>
-        <li class="nav-item"><a class="nav-link" href="smartphonePage.php">Smartfony</a></li>
-        <li class="nav-item"><a class="nav-link" href="computerPage.php">Komputery</a></li>
-        <li class="nav-item"><a class="nav-link" href="monitorPage.php">Monitory</a></li>
+        <?php $categories = $db->getAllCategories(); ?>
+
+        <?php foreach ($categories as $category) : ?>
+          <li class="nav-item"><a class="nav-link" href="categoryPage.php?category=<?= $category->id ?>"><?= $category->name ?></a></li>
+        <?php endforeach; ?>
 
 
         <li class="nav-item">

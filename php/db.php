@@ -248,6 +248,14 @@ class Db {
         return $result !== false;
     }
 
+    public function doesCategoryExistById(int $categoryId): bool {
+        $query = "SELECT 1 FROM categories WHERE id = $1 LIMIT 1";
+        $result = pg_query_params($this->conn, $query, [$categoryId]);
+
+        return $result && pg_fetch_row($result) !== false;
+    }
+
+
     //Zarządzania atrybutami
     public function getAllAttributes(): array {
         $query = "SELECT * FROM attributes ORDER BY name ASC";
