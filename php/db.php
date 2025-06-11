@@ -101,6 +101,37 @@ class Db {
         return $result !== false;
     }
 
+    public function upsertUserAddressBackup(int $userId, string $street, string $houseNumber, string $city, string $postalCode, string $country): bool {
+        if (!$this->userExistsById($userId)) {
+            return false;
+        }
+
+        $user = $this->getUserById($userId);
+        if ($user->hasAddress()) {
+            $query = "UPDATE addresses SET street_name = $1, house_number = $2, city = $3, postal_code = $4, country = $5 WHERE id = $6";
+
+            $result = pg_query_params($this->conn, $query, [$street, $houseNumber, $city, $postalCode, $country, $user->addressId]);
+            return $result !== false && pg_affected_rows($result) > 0;
+
+        } else {
+            $query = "INSERT INTO addresses (street_name, house_number, city, postal_code, country) VALUES ($1, $2, $3, $4, $5) RETURNING id";
+            $result = pg_query_params($this->conn, $query, [$street, $houseNumber, $city, $postalCode, $country]);
+
+            if ($result && pg_num_rows($result) === 1) {
+                $row = pg_fetch_assoc($result);
+                $newAddressId = $row['id'];
+
+                $updateUserQuery = "UPDATE users SET address_id = $1 WHERE id = $2";
+                pg_query_params($this->conn, $updateUserQuery, [$newAddressId, $userId]);
+
+                return true;
+            }
+
+            return false;
+        }
+
+    }
+
     //Zarządzanie zamówieniami
     public function getAllProductsFromOrder(int $orderId): array {
         $query = "SELECT * FROM order_item_view WHERE order_id = $1";
@@ -269,6 +300,42 @@ class Db {
         return $result !== false;
     }
 
+    // Zarządzanie przecenami
+    public function getAllDiscounts(): array {
+        $query = "SELECT * FROM discounts ORDER BY start_date DESC";
+        $result = pg_query($this->conn, $query);
+
+        $discounts = [];
+
+        if ($result) {
+            while ($row = pg_fetch_assoc($result)) {
+                $discounts[] = new Discount($row);
+            }
+        }
+
+        return $discounts;
+    }
+
+    public function addDiscount(string $name, float $discountPercent, string $startDate, string $endDate, bool $active = true): bool {
+        $query = "INSERT INTO discounts (name, discount_percent, start_date, end_date, active) VALUES ($1, $2, $3, $4, $5)";
+        $result = pg_query_params($this->conn, $query, [$name, $discountPercent, $startDate, $endDate, $active ? 'true' : 'false']);
+
+        return $result !== false;
+    }
+
+    public function updateDiscount(int $id, string $name, float $discountPercent, string $startDate, string $endDate, bool $active): bool {
+        $query = "UPDATE discounts SET name = $1, discount_percent = $2, start_date = $3, end_date = $4, active = $5 WHERE id = $6";
+        $result = pg_query_params($this->conn, $query, [$name, $discountPercent, $startDate, $endDate, $active ? 'true' : 'false', $id]);
+        
+        return $result !== false;
+    }
+
+    public function deleteDiscount(int $id): bool {
+        $query = "DELETE FROM discounts WHERE id = $1";
+        $result = pg_query_params($this->conn, $query, [$id]);
+
+        return $result !== false;
+    }
 
     //Zarządzania atrybutami
     public function getAllAttributes(): array {
@@ -492,30 +559,6 @@ class Db {
     }
 
 
-
-    public function getAllDiscounts(): array {
-        $query = "SELECT * FROM discounts ORDER BY start_date DESC";
-        $result = pg_query($this->conn, $query);
-
-        $discounts = [];
-
-        if ($result) {
-            while ($row = pg_fetch_assoc($result)) {
-                $discounts[] = new Discount($row);
-            }
-        }
-
-        return $discounts;
-    }
-
-    
-
-
-    
-
-
-
-    
 
 
 

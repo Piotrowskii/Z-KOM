@@ -51,11 +51,11 @@ CREATE TABLE users (
 
 CREATE TABLE discounts (
     id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    discount_percent DECIMAL(5,2) CHECK (discount_percent >= 0 AND discount_percent <= 100),
-    name TEXT,
-    start_date DATE DEFAULT CURRENT_DATE,
-    end_date DATE DEFAULT (CURRENT_DATE + INTERVAL '7 days'),
-    active BOOLEAN DEFAULT TRUE
+    discount_percent DECIMAL(5,2) NOT NULL CHECK (discount_percent >= 0 AND discount_percent <= 100),
+    name TEXT NOT NULL,
+    start_date DATE NOT NULL DEFAULT CURRENT_DATE,
+    end_date DATE NOT NULL DEFAULT (CURRENT_DATE + INTERVAL '7 days'),
+    active BOOLEAN NOT NULL DEFAULT TRUE
 );
 
 CREATE TABLE categories (
@@ -77,7 +77,6 @@ CREATE TABLE products (
     FOREIGN KEY (discount_id) REFERENCES discounts(id) ON DELETE SET NULL
 );
 
--- category_id = 1, name = "procesor"
 CREATE TABLE attributes (
     id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     name VARCHAR(255) NOT NULL,

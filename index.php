@@ -25,7 +25,7 @@ $cartCount = isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0;
 <!-- "Nawigacja" -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top shadow">
   <div class="container">
-    <a class="navbar-brand fw-bold fs-3" href="../index.php">Z-Kom</a>
+    <a class="navbar-brand fw-bold fs-3" href="index.php">Z-Kom</a>
 
     
 

@@ -14,7 +14,7 @@ class Discount {
         $this->name = $data['name'];
         $this->startDate = $data['start_date'];
         $this->endDate = $data['end_date'];
-        $this->active = (bool)$data['active'];
+        $this->active = ($data['active'] === 't');
     }
 
     public function isActive(): bool
