@@ -224,7 +224,7 @@ if (!empty($_SESSION['cart'])) {
 
             <div class="mb-3">
               <label for="card_number" class="form-label">Numer karty</label>
-              <input type="text" class="form-control" id="card_number" name="card_number" maxlength="19" pattern="\d{4} \d{4} \d{4} \d{4}" placeholder="1234 5678 9012 3456" required>
+              <input type="text" class="form-control" id="card_number" name="card_number" maxlength="19" pattern="\d{4} \d{4} \d{4} \d{4}" placeholder="3434 3434 3434 3434" required>
             </div>
 
             <div class="row mb-3">
