@@ -132,6 +132,17 @@ SessionStorage::renderAlert();
       </div>
     </div>
 
+    <!-- Zarządzanie przecenami -->
+    <div class="col-md-6">
+      <div class="card shadow border border-warning">
+        <div class="card-body">
+          <h5 class="card-title">Zarządaj przecenami</h5>
+          <p class="card-text">Kliknij poniższy przycisk, aby zarządzać przecenami w bazie.</p>
+          <a href="deleteReviewsPage.php" class="btn btn-warning">Zarządzaj przecenami</a>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 

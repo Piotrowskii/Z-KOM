@@ -60,7 +60,7 @@ CREATE TABLE discounts (
 
 CREATE TABLE categories (
     id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    name VARCHAR(255) NOT NULL
+    name VARCHAR(255) UNIQUE NOT NULL
 );
 
 CREATE TABLE products (
@@ -149,6 +149,36 @@ CREATE OR REPLACE VIEW order_item_view AS
 SELECT products.name, order_items.quantity, order_items.price, products.image_url, order_items.order_id, order_items.product_id AS id
 FROM order_items LEFT JOIN products ON products.id = order_items.product_id;
 
+
+CREATE OR REPLACE PROCEDURE upsert_user_address(
+    v_user_id INT,
+    v_street TEXT,
+    v_house_number TEXT,
+    v_city TEXT,
+    v_postal_code TEXT,
+    v_country TEXT
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    addr_id INT;
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM users WHERE id = v_user_id) THEN
+        RAISE EXCEPTION 'User does not exist';
+    END IF;
+
+    SELECT address_id INTO addr_id FROM users WHERE id = v_user_id;
+
+    IF addr_id IS NOT NULL THEN
+        UPDATE addresses SET street_name = v_street, house_number = v_house_number, city = v_city, postal_code = v_postal_code, country = v_country WHERE id = addr_id;
+    ELSE
+        INSERT INTO addresses (street_name, house_number, city, postal_code, country)
+        VALUES (v_street, v_house_number, v_city, v_postal_code, v_country) RETURNING id INTO addr_id;
+
+        UPDATE users SET address_id = addr_id WHERE id = v_user_id;
+    END IF;
+END;
+$$;
 
 
 

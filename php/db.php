@@ -95,39 +95,11 @@ class Db {
     }
 
     public function upsertUserAddress(int $userId, string $street, string $houseNumber, string $city, string $postalCode, string $country): bool {
+        $query = "CALL upsert_user_address($1, $2, $3, $4, $5, $6)";
+        $result = pg_query_params($this->conn, $query, [$userId, $street, $houseNumber, $city, $postalCode, $country]);
 
-        if (!$this->userExistsById($userId)) {
-            return false;
-        }
-
-        $user = $this->getUserById($userId);
-        if ($user->hasAddress()) {
-            $query = "UPDATE addresses SET street_name = $1, house_number = $2, city = $3, postal_code = $4, country = $5 WHERE id = $6";
-
-            $result = pg_query_params($this->conn, $query, [$street, $houseNumber, $city, $postalCode, $country, $user->addressId]);
-            return $result !== false && pg_affected_rows($result) > 0;
-
-        } else {
-            $query = "INSERT INTO addresses (street_name, house_number, city, postal_code, country) VALUES ($1, $2, $3, $4, $5) RETURNING id";
-
-            $result = pg_query_params($this->conn, $query, [$street, $houseNumber, $city, $postalCode, $country]);
-
-            if ($result && pg_num_rows($result) === 1) {
-                $row = pg_fetch_assoc($result);
-                $newAddressId = $row['id'];
-
-                $updateUserQuery = "UPDATE users SET address_id = $1 WHERE id = $2";
-                pg_query_params($this->conn, $updateUserQuery, [$newAddressId, $userId]);
-
-                return true;
-            }
-
-            return false;
-        }
-
+        return $result !== false;
     }
-
-
 
     //Zarządzanie zamówieniami
     public function getAllProductsFromOrder(int $orderId): array {
